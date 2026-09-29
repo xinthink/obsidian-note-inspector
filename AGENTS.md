@@ -114,7 +114,7 @@ src/
 ├── main.ts                 entry: view/command/ribbon/settings registration; fold writes
 ├── view.ts                 the panel: active-note following, render bookkeeping (§2.2),
 │                           navigate/editLines, updateChrome, session helpers (§2.3)
-├── settings.ts             settings tab
+├── settings.ts             settings tab (declarative getSettingDefinitions, 1.13+)
 ├── i18n.ts                 English / Chinese strings (follows the app language)
 ├── types.ts                NoteInspectorSettings + DEFAULT_SETTINGS,
 │                           SectionContext (navigate / editLines / refresh)
@@ -126,6 +126,8 @@ src/
 └── util/                   frontmatter.ts / dom.ts / links.ts / rich-text.ts
 styles.css                  panel styles (ni- namespace, Obsidian CSS variables only)
 scripts/                    deploy.mjs, check-manifest.mjs
+eslint.config.mts           lint config (obsidianmd recommended)
+version-bump.mjs           syncs manifest/versions on `npm version`
 ```
 
 ## 4. Development workflow
@@ -135,6 +137,12 @@ npm install
 npm run dev         # esbuild watch
 npm run build       # tsc --noEmit + esbuild production (main.js is not committed; it ships in releases)
 npm run typecheck
+npm run lint        # eslint . with the obsidianmd recommended rules (same as the directory
+                    # review); manifest.json is linted as JSON, tooling files are ignored
+npm run lint:css    # stylelint styles.css with the official stylelint-config-obsidianmd
+                    # (same CSS rules as the review). no-descending-specificity is disabled
+                    # in .stylelintrc.json: the stylesheet is organised by component,
+                    # and the ordering rule would scatter related rules across it.
 npm run check       # manifest/versions/package consistency; accepts <tag> and --assets
 npm run deploy -- --vault "<path>"   # or OBSIDIAN_VAULT / a local git-ignored config.json
 obsidian plugin:reload id=note-inspector
@@ -157,13 +165,20 @@ and later interfere with each other.
 
 ## 6. Releases and the community directory
 
-1. Bump the version in `manifest.json`, `package.json` (and the lockfile root) and
-   `versions.json`; add a `CHANGELOG.md` entry.
-2. `npm run build && npm run check 1.2.3 --assets`.
-3. Tag with the **bare version** (`1.2.3`, no `v`) → the release workflow builds
-   and creates a GitHub release carrying main.js / manifest.json / styles.css.
-   Obsidian downloads those three files from the release whose tag equals the
-   manifest version.
+1. Add a `CHANGELOG.md` entry, then run `npm version patch|minor|major`: it bumps
+   `package.json` + the lockfile, commits, and the `version` script
+   (`version-bump.mjs`) syncs `manifest.json` and `versions.json` (keeping
+   `minAppVersion`). `.npmrc` sets `tag-version-prefix=""`, so the created tag is
+   the bare version. Bump `minAppVersion` whenever a newer Obsidian API is adopted.
+2. `npm run lint && npm run build && npm run check 1.2.3 --assets`.
+3. `git push origin main 1.2.3` → the release workflow builds, verifies the tag
+   against the manifest, generates **artifact attestations** for main.js and
+   styles.css (`actions/attest@v4`; the workflow needs `id-token: write` and
+   `attestations: write`), and creates a **draft** GitHub release carrying
+   main.js / manifest.json / styles.css.
+4. Review the draft release on GitHub, then click **Publish**. Obsidian downloads
+   the three files from the published release whose tag equals the manifest
+   version.
 4. First-time marketplace submission: sign in at community.obsidian.md, link the
    GitHub account, add the plugin. The directory reads `manifest.json` from the
    default branch's HEAD; work through the automated review, and every fix needs
@@ -172,10 +187,14 @@ and later interfere with each other.
 ## 7. Conventions
 
 - No `console.*`, no `innerHTML`/`outerHTML`, no inline colours (Obsidian CSS
-  variables only), no default hotkeys.
+  variables only), no default hotkeys, and no system-clipboard access — the
+  community review flags `navigator.clipboard` usage.
 - Use `this.app`, never the global `app`; register events/commands with
   `registerEvent` / `addCommand`; prefer `async`/`await`.
 - Sentence case in UI text; no "settings" in settings-tab headings.
+- `minAppVersion` tracks the newest Obsidian API the plugin uses — currently
+  **1.13.0**, because the settings tab relies on the declarative
+  `getSettingDefinitions()` API.
 - CSS namespace `ni-`. Document layering: READMEs = users (usage only), AGENTS.md =
   this file (design/implementation), CONTRIBUTING.md = community workflow,
   CHANGELOG.md = user-visible changes.

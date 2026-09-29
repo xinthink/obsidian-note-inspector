@@ -23,6 +23,9 @@ npm install
 | `npm run build` | type check + production build (minified) |
 | `npm run typecheck` | `tsc --noEmit` only |
 | `npm run check` | validates `manifest.json` / `versions.json` / `package.json` consistency |
+| `npm run lint` | `eslint .` with the obsidianmd recommended config — the same rules the community review runs; `manifest.json` is validated as JSON |
+| `npm run lint:css` | stylelint with the official `stylelint-config-obsidianmd`, the same CSS rules the community review runs |
+| `npm version <patch\|minor\|major>` | bumps package.json + lockfile, and the `version` script syncs `manifest.json` / `versions.json` |
 | `npm run deploy` | copies `main.js`, `manifest.json`, `styles.css` into a vault |
 
 `npm run deploy` resolves the vault in this order:
@@ -62,6 +65,7 @@ Follow the [Obsidian plugin guidelines](https://docs.obsidian.md/Plugins/Releasi
 - Style with classes and Obsidian CSS variables only — no inline colors.
 - Register events with `this.registerEvent(...)` and commands with `this.addCommand(...)`.
 - Use the plugin's `this.app`, not the global `app`; prefer `async`/`await`.
+- Keep `npm run lint` clean; the community directory review runs the same rules.
 
 ## Verifying a change
 
@@ -69,7 +73,7 @@ There is no unit test suite: the interesting behaviour is DOM plus a real vault.
 Please do at least the following, and say in the pull request which Obsidian
 version you used:
 
-1. `npm run typecheck && npm run build && npm run check`
+1. `npm run lint && npm run lint:css && npm run typecheck && npm run build && npm run check`
 2. Reload the plugin; `obsidian dev:errors` (or the developer console) is clean.
 3. Open a note that has nested frontmatter (`generated: { by, at }`, an array of
    records), several heading levels, a footnote with more than one reference, a
@@ -89,21 +93,29 @@ obsidian dev:screenshot path=/tmp/panel.png
 
 ## Releasing
 
-1. Bump the version in `manifest.json`, `package.json` (and the lockfile root),
-   and `versions.json` (add `"<version>": "<minAppVersion>"`); add a `CHANGELOG.md`
-   entry.
-2. `npm run build && npm run check 1.2.3 --assets`
-3. Commit, then tag the bare version and push it:
+1. Add a `CHANGELOG.md` entry, then run:
 
    ```bash
-   git tag 1.2.3
+   npm version patch   # or minor / major
+   ```
+
+   `npm version` bumps `package.json` and the lockfile, commits, and the `version`
+   script keeps `manifest.json` and `versions.json` in sync. `.npmrc` sets
+   `tag-version-prefix=""`, so the tag is the bare version with no `v` prefix.
+
+2. `npm run lint && npm run build && npm run check 1.2.3 --assets`
+3. Push:
+
+   ```bash
    git push origin main 1.2.3
    ```
 
-   The [release workflow](.github/workflows/release.yml) builds the plugin and
-   creates a GitHub release with `main.js`, `manifest.json` and `styles.css`
-   attached. Obsidian downloads those three files from the release whose tag
-   matches the manifest version, so the tag must not have a `v` prefix.
+   The [release workflow](.github/workflows/release.yml) builds the plugin, checks
+   the tag against the manifest, attests `main.js` / `styles.css`, and creates a
+   **draft** GitHub release with the three files attached.
+
+4. Review the draft release on GitHub, then click **Publish**. Obsidian downloads
+   the assets from the published release whose tag matches the manifest version.
 
 ### Publishing to the community directory
 

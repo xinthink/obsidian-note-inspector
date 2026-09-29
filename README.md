@@ -11,6 +11,8 @@ folded.
 
 ## Install
 
+Requires Obsidian **1.13.0** or newer.
+
 ### From the community directory
 
 Search for **Note Inspector** in **Settings → Community plugins → Browse** once the
@@ -42,7 +44,7 @@ Shows the note's frontmatter in YAML order, nested objects included.
 - **`+ Add property`** adds a top-level property; choose Text, List or Dict first.
   **`+ Add field`** adds a key inside a dictionary, even an empty `{}`.
 - Links in values are clickable. Click a property key to reveal that line in the
-  note; hover a row for copy / delete.
+  note; hover a row to delete it.
 - Editing a property behaves like the built-in property editor, which may rewrite
   the formatting of the frontmatter block (`tags: [a, b]` can become a block
   list). Hand-crafted YAML is best edited in the note itself — click the key to

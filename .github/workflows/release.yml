@@ -2,7 +2,8 @@ name: Release
 
 # Obsidian downloads main.js / manifest.json / styles.css from the release whose
 # tag equals the `version` field in manifest.json, so the tag must be the bare
-# version (1.2.3, not v1.2.3).
+# version (1.2.3, not v1.2.3; `.npmrc` sets `tag-version-prefix=""` for
+# `npm version`).
 on:
   push:
     tags:
@@ -11,29 +12,41 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: "20.x"
+          node-version: "24"
           cache: npm
 
-      - run: npm ci
-      - run: npm run build
+      - name: Build plugin
+        run: |
+          npm ci
+          npm run build
 
       - name: Check the tag matches the manifest
         run: node scripts/check-manifest.mjs "$GITHUB_REF_NAME" --assets
 
-      - name: Create the GitHub release
+      - name: Attest build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            styles.css
+
+      - name: Create the GitHub release (draft)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
             main.js manifest.json styles.css \
             --title "$GITHUB_REF_NAME" \
+            --draft \
             --generate-notes

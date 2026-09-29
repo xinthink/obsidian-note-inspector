@@ -1,4 +1,9 @@
-import { PluginSettingTab, Setting, type App } from "obsidian";
+import {
+  Notice,
+  PluginSettingTab,
+  type App,
+  type SettingDefinitionItem,
+} from "obsidian";
 import { t } from "./i18n";
 import type NoteInspectorPlugin from "./main";
 import { cloneDefaultSettings } from "./types";
@@ -11,99 +16,52 @@ export class NoteInspectorSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  display(): void {
-    const { containerEl } = this;
-    containerEl.empty();
-    containerEl.addClass("note-inspector-settings");
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    const definitions: SettingDefinitionItem[] = [
+      {
+        name: t("settings.showCounts"),
+        desc: t("settings.showCountsDesc"),
+        control: { type: "toggle", key: "showCounts" },
+      },
+      {
+        name: t("settings.outlineMaxLevel"),
+        desc: t("settings.outlineMaxLevelDesc"),
+        control: { type: "slider", key: "outlineMaxLevel", min: 1, max: 6, step: 1 },
+      },
+      {
+        name: t("settings.showHeadingLevels"),
+        desc: t("settings.showHeadingLevelsDesc"),
+        control: { type: "toggle", key: "showHeadingLevels" },
+      },
+      {
+        name: t("settings.highlightCurrentHeading"),
+        desc: t("settings.highlightCurrentHeadingDesc"),
+        control: { type: "toggle", key: "highlightCurrentHeading" },
+      },
+      {
+        name: t("settings.showFootnoteContext"),
+        desc: t("settings.showFootnoteContextDesc"),
+        control: { type: "toggle", key: "showFootnoteContext" },
+      },
+      {
+        name: t("settings.footnoteRefLimit"),
+        desc: t("settings.footnoteRefLimitDesc"),
+        control: { type: "slider", key: "footnoteRefLimit", min: 1, max: 30, step: 1 },
+      },
+      {
+        name: t("settings.reset"),
+        desc: t("settings.resetDesc"),
+        action: () => void this.reset(),
+      },
+    ];
+    return definitions;
+  }
 
-    new Setting(containerEl)
-      .setName(t("settings.showCounts"))
-      .setDesc(t("settings.showCountsDesc"))
-      .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.showCounts).onChange(async (value) => {
-          this.plugin.settings.showCounts = value;
-          await this.plugin.saveSettings();
-          this.plugin.refreshViews();
-        }),
-      );
-
-    new Setting(containerEl)
-      .setName(t("settings.outlineMaxLevel"))
-      .setDesc(t("settings.outlineMaxLevelDesc"))
-      .addSlider((slider) =>
-        slider
-          .setLimits(1, 6, 1)
-          .setValue(this.plugin.settings.outlineMaxLevel)
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            this.plugin.settings.outlineMaxLevel = value;
-            await this.plugin.saveSettings();
-            this.plugin.refreshViews();
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName(t("settings.showHeadingLevels"))
-      .setDesc(t("settings.showHeadingLevelsDesc"))
-      .addToggle((toggle) =>
-        toggle.setValue(this.plugin.settings.showHeadingLevels).onChange(async (value) => {
-          this.plugin.settings.showHeadingLevels = value;
-          await this.plugin.saveSettings();
-          this.plugin.refreshViews();
-        }),
-      );
-
-    new Setting(containerEl)
-      .setName(t("settings.highlightCurrentHeading"))
-      .setDesc(t("settings.highlightCurrentHeadingDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.highlightCurrentHeading)
-          .onChange(async (value) => {
-            this.plugin.settings.highlightCurrentHeading = value;
-            await this.plugin.saveSettings();
-            this.plugin.refreshViews();
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName(t("settings.showFootnoteContext"))
-      .setDesc(t("settings.showFootnoteContextDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.showFootnoteContext)
-          .onChange(async (value) => {
-            this.plugin.settings.showFootnoteContext = value;
-            await this.plugin.saveSettings();
-            this.plugin.refreshViews();
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName(t("settings.footnoteRefLimit"))
-      .setDesc(t("settings.footnoteRefLimitDesc"))
-      .addSlider((slider) =>
-        slider
-          .setLimits(1, 30, 1)
-          .setValue(this.plugin.settings.footnoteRefLimit)
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            this.plugin.settings.footnoteRefLimit = value;
-            await this.plugin.saveSettings();
-            this.plugin.refreshViews();
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName(t("settings.reset"))
-      .setDesc(t("settings.resetDesc"))
-      .addButton((button) =>
-        button.setButtonText(t("settings.resetButton")).onClick(async () => {
-          this.plugin.settings = cloneDefaultSettings();
-          await this.plugin.saveSettings();
-          this.plugin.refreshViews();
-          this.display();
-        }),
-      );
+  private async reset(): Promise<void> {
+    this.plugin.settings = cloneDefaultSettings();
+    await this.plugin.saveSettings();
+    this.plugin.refreshViews();
+    new Notice(t("settings.resetDone"));
+    this.update();
   }
 }

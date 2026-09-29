@@ -24,9 +24,7 @@ const en = {
   typeDict: "Dict",
   propertyExists: "Property already exists: ",
   jumpToSource: "Reveal in note",
-  copyValue: "Copy value",
   deleteProperty: "Delete property",
-  copied: "Copied to clipboard",
   emptyValue: "Empty",
   addItem: "Add item",
   removeItem: "Remove item",
@@ -100,9 +98,7 @@ const zh: Dict = {
   typeDict: "字典",
   propertyExists: "属性已存在：",
   jumpToSource: "在笔记中定位",
-  copyValue: "复制值",
   deleteProperty: "删除属性",
-  copied: "已复制到剪贴板",
   emptyValue: "空",
   addItem: "添加项",
   removeItem: "删除该项",
@@ -176,10 +172,10 @@ function detectAppLocale(): string {
 
 function lookup(key: string): string {
   const parts = key.split(".");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let node: any = TABLES[activeLocale];
+  let node: unknown = TABLES[activeLocale];
   for (const part of parts) {
-    node = node?.[part];
+    if (node === null || typeof node !== "object") return key;
+    node = (node as Record<string, unknown>)[part];
   }
   return typeof node === "string" ? node : key;
 }

@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-09-29
+
+### Changed
+
+- Release assets now carry GitHub artifact attestations, so anyone can verify that
+  `main.js` and `styles.css` were produced by this repository's release workflow.
+- The plugin now requires Obsidian 1.13.0 or newer and uses the declarative
+  settings API, so its settings appear in Obsidian's settings search.
+- Removed the copy button for complex property values, so the plugin no longer
+  touches the system clipboard.
+
 ## [1.0.2] - 2026-09-29
 
 ### Changed
@@ -44,6 +55,7 @@ First release.
   reference lines can be shown or hidden on demand.
 - Localised labels (English / Chinese) that follow the Obsidian UI language.
 
+[1.0.3]: https://github.com/xinthink/obsidian-note-inspector/releases/tag/1.0.3
 [1.0.2]: https://github.com/xinthink/obsidian-note-inspector/releases/tag/1.0.2
 [1.0.1]: https://github.com/xinthink/obsidian-note-inspector/releases/tag/1.0.1
 [1.0.0]: https://github.com/xinthink/obsidian-note-inspector/releases/tag/1.0.0

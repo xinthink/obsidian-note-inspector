@@ -16,7 +16,7 @@ export default class NoteInspectorPlugin extends Plugin {
 
     this.addRibbonIcon("list-tree", t("openPanel"), () => void this.activateView());
     this.addCommand({
-      id: "open-note-inspector",
+      id: "open-panel",
       name: t("openPanel"),
       callback: () => void this.activateView(),
     });

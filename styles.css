@@ -53,8 +53,7 @@
 .ni-sections {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   overscroll-behavior: contain;
   padding: 4px 8px 24px;
 }
@@ -702,7 +701,6 @@ button.ni-add-button-inline .ni-icon svg {
   background-color: var(--background-modifier-hover);
   cursor: var(--cursor);
   border-radius: 10px;
-  border-radius: 10px;
 }
 
 .ni-fn-id {
@@ -769,6 +767,7 @@ button.ni-fn-refs-toggle:hover {
   padding: 2px 0;
   font-size: var(--font-ui-small);
   color: var(--text-normal);
+
   /* One click drops into the editor, so the text cursor is the right hint. */
   cursor: text;
   border-radius: var(--radius-s);

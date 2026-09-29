@@ -60,13 +60,6 @@ function renderPropertyRow(
   renderValue(valueEl, ctx, path, value, depth);
 
   const actions = actionBar(row);
-  if (isComplex(value)) {
-    iconButton(actions, {
-      icon: "copy",
-      label: t("copyValue"),
-      onClick: () => void copyValue(value),
-    });
-  }
   iconButton(actions, {
     icon: "trash-2",
     label: t("deleteProperty"),
@@ -118,7 +111,7 @@ function renderValue(
     case "object":
       break;
     default:
-      host.createSpan({ cls: "ni-value", text: String(value) });
+      host.createSpan({ cls: "ni-value", text: scalarText(value) });
       return;
   }
   if (Array.isArray(value)) {
@@ -261,11 +254,6 @@ function renderItems(
 
     const actions = actionBar(itemEl);
     iconButton(actions, {
-      icon: "copy",
-      label: t("copyValue"),
-      onClick: () => void copyValue(item),
-    });
-    iconButton(actions, {
       icon: "trash-2",
       label: t("removeItem"),
       onClick: () => {
@@ -344,10 +332,8 @@ function itemLabel(item: Record<string, unknown>, index: number): string {
     const value = item[key];
     if (typeof value === "string" && value.trim() !== "") return value;
   }
-  const scalar = Object.values(item).find(
-    (entry) => isPrimitive(entry) && String(entry ?? "").trim() !== "",
-  );
-  return scalar === undefined ? `#${index + 1}` : String(scalar);
+  const scalar = Object.values(item).find((entry) => scalarText(entry).trim() !== "");
+  return scalar === undefined ? `#${index + 1}` : scalarText(scalar);
 }
 
 function renderChips(
@@ -386,11 +372,7 @@ function renderChipText(
   path: string[],
   item: unknown,
 ): void {
-  if (typeof item === "boolean") {
-    host.setText(String(item));
-    return;
-  }
-  const text = typeof item === "number" ? String(item) : String(item ?? "");
+  const text = scalarText(item);
   host.setText(text);
   host.title = t("clickToEdit");
   host.addEventListener("click", () => startScalarEdit(host, ctx, path, item as number | string));
@@ -553,20 +535,17 @@ async function addPropertyFromPanel(
   ctx.refresh();
 }
 
-async function copyValue(value: unknown): Promise<void> {
-  const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
-  try {
-    await navigator.clipboard.writeText(text);
-    new Notice(t("copied"));
-  } catch {
-    new Notice("Note inspector: clipboard unavailable");
-  }
-}
-
 function revealSource(ctx: SectionContext, path: string[]): void {
   const line = findFrontmatterLine(ctx.lines, ctx.cache, path);
   if (line === null) return;
   ctx.navigate({ line, ch: 0 });
+}
+
+/** Display text for a primitive value, or "" for objects. */
+function scalarText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
 }
 
 function isPrimitive(value: unknown): boolean {
@@ -583,6 +562,3 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isComplex(value: unknown): boolean {
-  return typeof value === "object" && value !== null;
-}
