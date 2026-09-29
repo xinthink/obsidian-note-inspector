@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in the panel behaves differently than expected
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please check the panel's **Settings → Note Inspector**
+        list and the README first, and include your Obsidian and plugin versions.
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: Shown in Settings → Community plugins, or in the plugin's manifest.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: obsidian-version
+    attributes:
+      label: Obsidian version
+      description: Settings → General → check for updates, or the installer version.
+      placeholder: "1.11.7"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - iOS
+        - Android
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: note-shape
+    attributes:
+      label: Note shape
+      description: >
+        If the problem is about a specific note, paste the relevant part of it —
+        the frontmatter and the headings / footnotes involved. Redact anything private.
+      render: markdown
+    validations:
+      required: false
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: >
+        Anything relevant from the developer console (Ctrl/Cmd+Shift+I → Console).
+      render: text
+    validations:
+      required: false

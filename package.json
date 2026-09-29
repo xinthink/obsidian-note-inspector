@@ -1,23 +1,38 @@
 {
   "name": "obsidian-note-inspector",
   "version": "1.0.0",
-  "description": "Obsidian plugin: an inspector panel for the active note \u2014 properties, outline and footnotes in one collapsible view.",
+  "description": "Obsidian plugin: an inspector panel for the active note — properties, outline and footnotes in one collapsible view.",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
     "typecheck": "tsc --noEmit --skipLibCheck",
+    "check": "node scripts/check-manifest.mjs",
     "deploy": "node scripts/deploy.mjs"
   },
   "keywords": [
     "obsidian",
     "obsidian-plugin",
     "frontmatter",
+    "properties",
     "outline",
-    "footnotes"
+    "footnotes",
+    "sidebar"
   ],
   "license": "MIT",
+  "author": "xinthink",
+  "homepage": "https://github.com/xinthink/obsidian-note-inspector#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xinthink/obsidian-note-inspector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xinthink/obsidian-note-inspector/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "esbuild": "^0.24.2",

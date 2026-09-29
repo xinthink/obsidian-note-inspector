@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest a change to the panel
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the workflow that feels awkward today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+      description: A rough idea is enough; sketches of the panel layout are welcome.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Core views, other plugins, manual editing…
+    validations:
+      required: false

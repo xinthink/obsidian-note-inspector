@@ -24,10 +24,6 @@ export default class NoteInspectorPlugin extends Plugin {
     this.addSettingTab(new NoteInspectorSettingTab(this.app, this));
   }
 
-  onunload(): void {
-    this.app.workspace.detachLeavesOfType(VIEW_TYPE_NOTE_INSPECTOR);
-  }
-
   /** Reveal the panel, creating it in the right sidebar on first use. */
   async activateView(): Promise<void> {
     const { workspace } = this.app;

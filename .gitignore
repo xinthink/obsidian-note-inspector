@@ -1,14 +1,16 @@
 # dependencies
 node_modules/
 
-# build output (only main.js is kept in-repo for drag-and-drop installs)
+# build output: produced by `npm run build`, attached to GitHub releases
+main.js
 main.js.map
 *.tsbuildinfo
+
+# local deploy target override
+config.json
+.env
 
 # OS / editor noise
 .DS_Store
 .idea/
 .vscode/
-
-# local deploy target override
-.env

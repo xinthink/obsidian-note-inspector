@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+# Build output: keep it out of diffs and out of GitHub's language stats.
+main.js linguist-generated=true -diff
+
+styles.css linguist-detectable=true

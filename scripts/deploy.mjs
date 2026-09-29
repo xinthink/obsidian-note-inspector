@@ -5,22 +5,15 @@
  *   1. `--vault <path>` on the command line
  *   2. `OBSIDIAN_VAULT` environment variable
  *   3. `vault` key of `config.json` in the repo root (git-ignored)
- *   4. the default iCloud vault used by this setup
  */
 import { copyFile, mkdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARTIFACTS = ["main.js", "manifest.json", "styles.css"];
-const DEFAULT_VAULT = path.join(
-  os.homedir(),
-  "Library/Mobile Documents/iCloud~md~obsidian/Documents/wiki",
-);
-
 async function resolveVault() {
   const flag = process.argv.indexOf("--vault");
   if (flag > -1 && process.argv[flag + 1]) return path.resolve(process.argv[flag + 1]);
@@ -31,7 +24,18 @@ async function resolveVault() {
   } catch {
     // no local config: fall through to the default vault
   }
-  return DEFAULT_VAULT;
+  console.error(
+    [
+      "No vault given. Pass one in any of these ways:",
+      '  npm run deploy -- --vault "/path/to/your/vault"',
+      '  OBSIDIAN_VAULT="/path/to/your/vault" npm run deploy',
+      '  echo \'{"vault": "/path/to/your/vault"}\' > config.json',
+      "",
+      "Tip: an iCloud vault on macOS lives at",
+      '  "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/<vault>".',
+    ].join("\n"),
+  );
+  process.exit(1);
 }
 
 const manifest = JSON.parse(await readFile(path.join(root, "manifest.json"), "utf8"));

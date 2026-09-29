@@ -8,6 +8,7 @@ import {
   applyPathEdit,
   findFrontmatterLine,
   frontmatterEntries,
+  type PathEdit,
 } from "../util/frontmatter";
 import { appendRichText } from "../util/rich-text";
 
@@ -70,9 +71,7 @@ function renderPropertyRow(
     icon: "trash-2",
     label: t("deleteProperty"),
     onClick: () => {
-      void applyPathEdit(ctx.app, ctx.file, path, { op: "delete" }).then(() =>
-        ctx.refresh(),
-      );
+      void commitEdit(ctx, path, { op: "delete" });
     },
   });
 
@@ -145,9 +144,7 @@ function renderBoolean(
   const input = label.createEl("input", { type: "checkbox" });
   input.checked = value;
   input.addEventListener("change", () => {
-    void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: input.checked }).then(() =>
-      ctx.refresh(),
-    );
+    void commitEdit(ctx, path, { op: "set", value: input.checked });
   });
 }
 
@@ -179,9 +176,7 @@ function startScalarEdit(
       if (isNumber && raw.trim() !== "" && Number.isFinite(Number(raw))) {
         next = Number(raw);
       }
-      void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: next }).then(() =>
-        ctx.refresh(),
-      );
+      void commitEdit(ctx, path, { op: "set", value: next });
     },
     onCancel: () => ctx.refresh(),
   });
@@ -274,9 +269,7 @@ function renderItems(
       icon: "trash-2",
       label: t("removeItem"),
       onClick: () => {
-        void applyPathEdit(ctx.app, ctx.file, itemPath, { op: "delete" }).then(() =>
-          ctx.refresh(),
-        );
+        void commitEdit(ctx, itemPath, { op: "delete" });
       },
     });
 
@@ -316,10 +309,7 @@ function renderAddItem(
     } else {
       ctx.view.ui.pendingEditPath = null;
     }
-    void applyPathEdit(ctx.app, ctx.file, path, {
-      op: "set",
-      value: [...value, template],
-    }).then(() => ctx.refresh());
+    void commitEdit(ctx, path, { op: "set", value: [...value, template] });
   });
 }
 
@@ -376,9 +366,7 @@ function renderChips(
       label: t("removeItem"),
       cls: "ni-chip-remove",
       onClick: () => {
-        void applyPathEdit(ctx.app, ctx.file, [...path, String(index)], { op: "delete" }).then(
-          () => ctx.refresh(),
-        );
+        void commitEdit(ctx, [...path, String(index)], { op: "delete" });
       },
     });
   });
@@ -387,9 +375,7 @@ function renderChips(
     label: t("addItem"),
     cls: "ni-chip-add",
     onClick: () => {
-      void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: [...value, ""] }).then(
-        () => ctx.refresh(),
-      );
+      void commitEdit(ctx, path, { op: "set", value: [...value, ""] });
     },
   });
 }
@@ -468,10 +454,7 @@ function renderAddKey(
             return;
           }
           ctx.view.ui.pendingEditPath = [...path, key];
-          void applyPathEdit(ctx.app, ctx.file, path, {
-            op: "set",
-            value: { ...value, [key]: "" },
-          }).then(() => ctx.refresh());
+          void commitEdit(ctx, path, { op: "set", value: { ...value, [key]: "" } });
         },
         onCancel: () => ctx.refresh(),
       });
@@ -539,16 +522,35 @@ function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[
             return;
           }
           const value = types[selected].value;
-          void addProperty(ctx.app, ctx.file, key, keys, value).then((ok) => {
-            if (ok && typeof value === "string") ctx.view.ui.pendingEditPath = [key];
-            ctx.refresh();
-          });
+          void addPropertyFromPanel(ctx, key, keys, value);
         },
         onCancel: () => ctx.refresh(),
       });
     });
   };
   showButton();
+}
+
+/** Apply a frontmatter edit, then rebuild the panel. */
+async function commitEdit(
+  ctx: SectionContext,
+  path: string[],
+  edit: PathEdit,
+): Promise<void> {
+  await applyPathEdit(ctx.app, ctx.file, path, edit);
+  ctx.refresh();
+}
+
+/** Create a property and drop straight into editing its value. */
+async function addPropertyFromPanel(
+  ctx: SectionContext,
+  key: string,
+  existing: string[],
+  value: unknown,
+): Promise<void> {
+  const added = await addProperty(ctx.app, ctx.file, key, existing, value);
+  if (added && typeof value === "string") ctx.view.ui.pendingEditPath = [key];
+  ctx.refresh();
 }
 
 async function copyValue(value: unknown): Promise<void> {
