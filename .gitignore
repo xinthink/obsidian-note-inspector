@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# build output (only main.js is kept in-repo for drag-and-drop installs)
+main.js.map
+*.tsbuildinfo
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/
+
+# local deploy target override
+.env

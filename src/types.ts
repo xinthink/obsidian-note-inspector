@@ -1,0 +1,77 @@
+import type { App, CachedMetadata, TFile } from "obsidian";
+import type NotePanelPlugin from "./main";
+import type { NotePanelView } from "./view";
+
+/** The three stacked, collapsible parts of the panel. */
+export type SectionId = "properties" | "outline" | "footnotes";
+
+export const SECTION_IDS: SectionId[] = ["properties", "outline", "footnotes"];
+
+export interface NotePanelSettings {
+  /** Remembered collapsed/expanded state of every section. */
+  collapsed: Record<SectionId, boolean>;
+  /** Show the number of items next to a section title. */
+  showCounts: boolean;
+  /** Deepest heading level rendered in the outline (1-6). */
+  outlineMaxLevel: number;
+  /** Prefix outline entries with a `H1`..`H6` badge. */
+  showHeadingLevels: boolean;
+  /** Highlight the heading of the section the cursor currently sits in. */
+  highlightCurrentHeading: boolean;
+  /** Show the source line a footnote is referenced from. */
+  showFootnoteContext: boolean;
+  /** How many references to list inline before offering "show more". */
+  footnoteRefLimit: number;
+  language: PanelLanguage;
+}
+
+export type PanelLanguage = "auto" | "en" | "zh";
+
+export const DEFAULT_SETTINGS: NotePanelSettings = {
+  collapsed: {
+    properties: false,
+    outline: false,
+    footnotes: false,
+  },
+  showCounts: true,
+  outlineMaxLevel: 6,
+  showHeadingLevels: false,
+  highlightCurrentHeading: true,
+  showFootnoteContext: true,
+  footnoteRefLimit: 8,
+  language: "auto",
+};
+
+/** Fresh copy of the defaults, safe to mutate. */
+export function cloneDefaultSettings(): NotePanelSettings {
+  return { ...DEFAULT_SETTINGS, collapsed: { ...DEFAULT_SETTINGS.collapsed } };
+}
+
+/** Everything a section renderer needs; built once per render pass. */
+export interface SectionContext {
+  app: App;
+  plugin: NotePanelPlugin;
+  view: NotePanelView;
+  file: TFile;
+  /** Current text of the note (editor buffer when available, else disk). */
+  content: string;
+  /** `content` split by newline, kept around for line-addressable lookup. */
+  lines: string[];
+  cache: CachedMetadata | null;
+  /** Scroll the note to a line, opening it in a workspace leaf if needed. */
+  navigate(line: number, ch?: number): void;
+  /** Ask the view for another render pass (after a mutation). */
+  scheduleRender(): void;
+}
+
+/** Mutable, non-persisted UI state that must survive re-renders. */
+export interface PanelUiState {
+  /** Footnote ids whose full reference list is expanded. */
+  expandedFootnoteRefs: Set<string>;
+  /** Footnote ids whose definition text is un-clamped. */
+  expandedFootnoteDefs: Set<string>;
+  /** Property path to focus with an inline editor right after a render. */
+  pendingEditPath: string[] | null;
+  /** Array items (keyed by `file path::property path`) expanded to full detail. */
+  expandedItems: Set<string>;
+}

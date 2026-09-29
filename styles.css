@@ -1,0 +1,715 @@
+/* ==========================================================================
+   Note panel — properties / outline / footnotes in one side panel
+   ========================================================================== */
+
+.note-panel-view {
+  padding: 0;
+}
+
+.np-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ------------------------------------------------------------------ header */
+
+.np-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex: 0 0 auto;
+}
+
+.np-file {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.np-file-name {
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold, 600);
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.np-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.55;
+  transition: opacity 100ms ease-in-out;
+}
+
+.np-header-actions:hover {
+  opacity: 1;
+}
+
+.np-sections {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 4px 8px 24px;
+}
+
+/* ---------------------------------------------------------------- sections */
+
+.np-section {
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+.np-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.np-section-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 4px;
+  border-radius: var(--radius-s);
+  cursor: var(--cursor);
+  user-select: none;
+}
+
+.np-section-header:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.np-section-header:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.np-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.np-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+
+.np-section-title {
+  flex: 1 1 auto;
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold, 600);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.np-section-count {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  background-color: var(--background-modifier-hover);
+  border-radius: 10px;
+  padding: 0 6px;
+  line-height: 16px;
+}
+
+.np-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 100ms ease-in-out;
+}
+
+.np-section-header:hover .np-section-actions,
+.np-section-actions:focus-within {
+  opacity: 1;
+}
+
+.np-section-body {
+  padding: 2px 0;
+}
+
+/* ------------------------------------------------------------- icon button */
+
+.np-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-s);
+  cursor: var(--cursor);
+  flex: 0 0 auto;
+}
+
+.np-icon-button:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.np-icon-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* -------------------------------------------------------------- properties */
+
+.np-props,
+.np-object {
+  display: flex;
+  flex-direction: column;
+}
+
+.np-prop {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 2px 4px 2px calc(3px + var(--np-depth, 0) * 8px);
+  border-radius: var(--radius-s);
+}
+
+.np-prop:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* Top level properties line up in two columns… */
+.np-prop[data-depth="0"] > .np-prop-key {
+  flex: 0 0 auto;
+  width: clamp(46px, 34%, 96px);
+}
+
+/* …while nested values flow inline as `key: value`, so a narrow sidebar can
+   never squeeze a value column down to nothing. */
+.np-prop:not([data-depth="0"]) {
+  gap: 4px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.np-prop:not([data-depth="0"]) > .np-prop-key {
+  flex: 0 0 auto;
+  max-width: 45%;
+}
+
+.np-prop:not([data-depth="0"]) > .np-prop-key::after {
+  content: ":";
+  color: var(--text-faint);
+}
+
+.np-prop:not([data-depth="0"]) > .np-prop-value {
+  flex: 1 1 auto;
+}
+
+.np-prop-key {
+  min-width: 0;
+  font-size: var(--font-ui-smaller);
+  line-height: 1.5;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+  cursor: var(--cursor-link, pointer);
+}
+
+.np-prop-key:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.np-prop-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.np-value {
+  overflow-wrap: anywhere;
+}
+
+.np-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.np-string {
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.np-value-empty {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.np-checkbox {
+  display: inline-flex;
+  align-items: center;
+  cursor: var(--cursor);
+}
+
+.np-link {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.np-link:hover {
+  text-decoration: underline;
+}
+
+/* Hover actions float above the value instead of reserving a column. */
+.np-actions {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding-left: 10px;
+  background-image: linear-gradient(
+    to right,
+    transparent 0,
+    var(--background-modifier-hover) 10px
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 100ms ease-in-out;
+}
+
+.np-prop:hover .np-actions,
+.np-item:hover .np-actions,
+.np-actions:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.np-json {
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  white-space: pre-wrap;
+  margin: 2px 0;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ chips */
+
+.np-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.np-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: 0 2px 0 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-secondary);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.6;
+}
+
+.np-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.np-chip-remove {
+  width: 16px;
+  height: 16px;
+  opacity: 0.45;
+}
+
+.np-chip-remove svg {
+  width: 11px;
+  height: 11px;
+}
+
+.np-chip:hover .np-chip-remove {
+  opacity: 0.9;
+}
+
+.np-chip-add {
+  width: 18px;
+  height: 18px;
+}
+
+/* -------------------------------------------------- arrays of records */
+
+.np-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.np-item {
+  position: relative;
+  border-radius: var(--radius-s);
+}
+
+.np-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.np-item-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: auto;
+  padding: 2px 4px;
+  font-size: var(--font-ui-small);
+  font-weight: normal;
+  text-align: left;
+  color: var(--text-normal);
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: var(--cursor);
+}
+
+.np-item-toggle:hover {
+  background-color: transparent;
+}
+
+.np-item-chevron {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  color: var(--text-faint);
+}
+
+.np-item-chevron svg {
+  width: 12px;
+  height: 12px;
+}
+
+.np-item-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-item.is-expanded .np-item-label {
+  white-space: normal;
+}
+
+.np-item-body {
+  padding: 0 0 4px 12px;
+}
+
+.np-array-item {
+  padding-left: 4px;
+}
+
+/* --------------------------------------------------------- add property UI */
+
+.np-add {
+  padding: 4px 2px 0;
+}
+
+.np-add-button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: auto;
+  padding: 3px 6px;
+  font-size: var(--font-ui-smaller);
+  font-weight: normal;
+  color: var(--text-muted);
+  background-color: transparent;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: none;
+  cursor: var(--cursor);
+}
+
+.np-add-button:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.np-add-button .np-icon {
+  display: flex;
+  align-items: center;
+}
+
+.np-add-button .np-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.np-add-row {
+  padding: 1px 2px;
+}
+
+.np-edit-input {
+  width: 100%;
+  height: auto;
+  min-height: 22px;
+  padding: 1px 4px;
+  font-size: var(--font-ui-small);
+}
+
+/* --------------------------------------------------------------- outline */
+
+.np-outline {
+  display: flex;
+  flex-direction: column;
+}
+
+.np-outline-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+  line-height: 1.45;
+  color: var(--text-normal);
+  cursor: var(--cursor);
+}
+
+.np-outline-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.np-outline-item:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.np-outline-item.is-active {
+  color: var(--text-accent);
+  background-color: var(--background-modifier-hover);
+}
+
+.np-outline-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-outline-level {
+  flex: 0 0 auto;
+  font-size: var(--font-ui-smaller);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.np-h1 {
+  padding-left: 4px;
+  font-weight: var(--font-semibold, 600);
+}
+
+.np-h2 {
+  padding-left: 16px;
+}
+
+.np-h3 {
+  padding-left: 28px;
+}
+
+.np-h4 {
+  padding-left: 40px;
+}
+
+.np-h5 {
+  padding-left: 52px;
+}
+
+.np-h6 {
+  padding-left: 64px;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------- footnotes */
+
+.np-footnotes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.np-fn {
+  border-left: 2px solid var(--background-modifier-border);
+  padding: 2px 2px 4px 8px;
+}
+
+.np-fn.is-undefined {
+  border-left-color: var(--text-error);
+}
+
+.np-fn.is-unused {
+  border-left-style: dotted;
+  opacity: 0.8;
+}
+
+.np-fn-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.np-fn-index {
+  flex: 0 0 auto;
+  min-width: 18px;
+  padding: 0 4px;
+  text-align: center;
+  font-size: var(--font-ui-smaller);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  background-color: var(--background-modifier-hover);
+  border-radius: 10px;
+}
+
+.np-fn-id {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-fn-meta {
+  flex: 0 0 auto;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.np-fn.is-undefined .np-fn-meta {
+  color: var(--text-error);
+}
+
+.np-fn-def {
+  padding: 2px 0;
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  cursor: var(--cursor);
+  border-radius: var(--radius-s);
+}
+
+.np-fn-def:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.np-fn-def.is-missing {
+  color: var(--text-error);
+  font-style: italic;
+  cursor: default;
+}
+
+.np-fn-def-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.np-fn-def-text.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.np-fn-refs {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 2px;
+}
+
+.np-fn-ref {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 1px 3px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  cursor: var(--cursor);
+}
+
+.np-fn-ref:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.np-fn-ref-line {
+  flex: 0 0 auto;
+  min-width: 28px;
+  font-family: var(--font-monospace);
+  color: var(--text-faint);
+}
+
+.np-fn-ref-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.np-more {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: auto;
+  padding: 1px 4px;
+  margin-top: 2px;
+  font-size: var(--font-ui-smaller);
+  font-weight: normal;
+  color: var(--text-muted);
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: var(--cursor);
+}
+
+.np-more:hover {
+  color: var(--text-accent);
+  background-color: transparent;
+}
+
+.np-more-chevron {
+  display: flex;
+  align-items: center;
+}
+
+.np-more-chevron svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ------------------------------------------------------------- empty state */
+
+.np-empty {
+  padding: 2px 4px 6px;
+  font-size: var(--font-ui-smaller);
+  font-style: italic;
+  color: var(--text-faint);
+}
