@@ -17,9 +17,9 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
   const settings = ctx.plugin.settings;
   const groups = collectGroups(ctx);
   const withRefs = groups.filter((group) => group.references.length > 0);
-  const allFolded =
+  const allExpanded =
     withRefs.length > 0 &&
-    withRefs.every((group) => ctx.view.ui.collapsedFootnoteRefs.has(group.id));
+    withRefs.every((group) => ctx.plugin.isFootnoteRefsExpanded(group.id));
 
   createCollapsibleSection(parent, {
     id: "footnotes",
@@ -33,14 +33,13 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
       // Keep this one visible: it is the only way to fold every list at once.
       bar.addClass("is-persistent");
       iconButton(bar, {
-        icon: allFolded ? "chevrons-up-down" : "chevrons-down-up",
-        label: allFolded ? t("expandAllReferences") : t("collapseAllReferences"),
+        icon: allExpanded ? "chevrons-down-up" : "chevrons-up-down",
+        label: allExpanded ? t("collapseAllReferences") : t("expandAllReferences"),
         onClick: () => {
-          for (const group of withRefs) {
-            if (allFolded) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
-            else ctx.view.ui.collapsedFootnoteRefs.add(group.id);
-          }
-          ctx.plugin.setFoldedFootnoteRefs(ctx.view.ui.collapsedFootnoteRefs);
+          ctx.plugin.setAllFootnoteRefsExpanded(
+            withRefs.map((group) => group.id),
+            !allExpanded,
+          );
           ctx.refresh();
         },
       });
@@ -163,7 +162,7 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
   index.addEventListener("click", selectInNote);
   idEl.addEventListener("click", selectInNote);
 
-  const collapsed = ctx.view.ui.collapsedFootnoteRefs.has(group.id);
+  const expanded = ctx.plugin.isFootnoteRefsExpanded(group.id);
   if (group.references.length === 0) {
     const meta = head.createSpan({ cls: "ni-fn-meta" });
     meta.setText(group.definition ? t("footnoteUnused") : t("footnoteMissing"));
@@ -175,8 +174,8 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
     cls: "ni-fn-meta ni-fn-refs-toggle",
     attr: {
       type: "button",
-      "aria-expanded": String(!collapsed),
-      title: collapsed ? t("expandReferences") : t("collapseReferences"),
+      "aria-expanded": String(expanded),
+      title: expanded ? t("collapseReferences") : t("expandReferences"),
     },
   });
   toggle.createSpan({
@@ -186,16 +185,14 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
         : t("footnoteReferenceMany", { n: group.references.length }),
   });
   const chevron = toggle.createSpan({ cls: "ni-fn-toggle-chevron" });
-  setIcon(chevron, collapsed ? "chevron-right" : "chevron-down");
+  setIcon(chevron, expanded ? "chevron-down" : "chevron-right");
   toggle.addEventListener("click", () => {
-    if (collapsed) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
-    else ctx.view.ui.collapsedFootnoteRefs.add(group.id);
-    ctx.plugin.setFoldedFootnoteRefs(ctx.view.ui.collapsedFootnoteRefs);
+    ctx.plugin.toggleFootnoteRefs(group.id);
     ctx.refresh();
   });
 
   renderDefinition(card, head, ctx, group);
-  if (!collapsed && ctx.plugin.settings.showFootnoteContext) {
+  if (expanded && ctx.plugin.settings.showFootnoteContext) {
     renderReferences(card, ctx, group);
   }
 }

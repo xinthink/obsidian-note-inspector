@@ -22,8 +22,10 @@ export interface NoteInspectorSettings {
   showFootnoteContext: boolean;
   /** How many references to list inline before offering "show more". */
   footnoteRefLimit: number;
-  /** Footnote ids whose reference rows were folded away (remembered). */
-  foldedFootnoteRefs: string[];
+  /** Whether a footnote's reference rows are open without being asked for. */
+  footnoteRefsExpanded: boolean;
+  /** Footnote ids whose fold state differs from that default (remembered). */
+  footnoteRefsToggled: string[];
 }
 
 export const DEFAULT_SETTINGS: NoteInspectorSettings = {
@@ -38,7 +40,8 @@ export const DEFAULT_SETTINGS: NoteInspectorSettings = {
   highlightCurrentHeading: true,
   showFootnoteContext: true,
   footnoteRefLimit: 8,
-  foldedFootnoteRefs: [],
+  footnoteRefsExpanded: false,
+  footnoteRefsToggled: [],
 };
 
 /** Fresh copy of the defaults, safe to mutate. */
@@ -46,7 +49,7 @@ export function cloneDefaultSettings(): NoteInspectorSettings {
   return {
     ...DEFAULT_SETTINGS,
     collapsed: { ...DEFAULT_SETTINGS.collapsed },
-    foldedFootnoteRefs: [...DEFAULT_SETTINGS.foldedFootnoteRefs],
+    footnoteRefsToggled: [...DEFAULT_SETTINGS.footnoteRefsToggled],
   };
 }
 
@@ -87,8 +90,6 @@ export interface PanelUiState {
   expandedFootnoteRefs: Set<string>;
   /** Footnote ids whose definition text is un-clamped. */
   expandedFootnoteDefs: Set<string>;
-  /** Footnote ids whose reference rows are folded away. */
-  collapsedFootnoteRefs: Set<string>;
   /** Property path to focus with an inline editor right after a render. */
   pendingEditPath: string[] | null;
   /** Array items (keyed by `file path::property path`) expanded to full detail. */

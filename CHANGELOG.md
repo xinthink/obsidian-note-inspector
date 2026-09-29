@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-09-29
+
+### Changed
+
+- Footnote reference lines now start **folded**, so a footnote list reads as
+  definitions only until you ask for the references. The new "Expand reference
+  lists" setting flips that default, and clicking a reference count or the
+  section header button still toggles individual footnotes or all of them.
+- Fold state moved from a list of folded footnotes to a default plus per-footnote
+  overrides, so changing the default resets the manual tweaks predictably.
+
 ## [1.0.0] - 2026-09-29
 
 First release.
@@ -29,4 +40,5 @@ First release.
   independently, and both fold states are remembered in `data.json`.
 - Localised labels (English / Chinese) that follow the Obsidian UI language.
 
+[1.0.1]: https://github.com/xinthink/obsidian-note-inspector/releases/tag/1.0.1
 [1.0.0]: https://github.com/xinthink/obsidian-note-inspector/releases/tag/1.0.0

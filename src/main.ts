@@ -50,7 +50,8 @@ export default class NoteInspectorPlugin extends Plugin {
       highlightCurrentHeading: stored?.highlightCurrentHeading ?? defaults.highlightCurrentHeading,
       showFootnoteContext: stored?.showFootnoteContext ?? defaults.showFootnoteContext,
       footnoteRefLimit: stored?.footnoteRefLimit ?? defaults.footnoteRefLimit,
-      foldedFootnoteRefs: [...(stored?.foldedFootnoteRefs ?? defaults.foldedFootnoteRefs)],
+      footnoteRefsExpanded: stored?.footnoteRefsExpanded ?? defaults.footnoteRefsExpanded,
+      footnoteRefsToggled: [...(stored?.footnoteRefsToggled ?? defaults.footnoteRefsToggled)],
     };
   }
 
@@ -65,9 +66,29 @@ export default class NoteInspectorPlugin extends Plugin {
     void this.saveSettings();
   }
 
-  /** Remember which footnotes have their reference rows folded. */
-  setFoldedFootnoteRefs(ids: Iterable<string>): void {
-    this.settings.foldedFootnoteRefs = [...ids];
+  /**
+   * Whether a footnote shows its reference rows. Entries the user toggled by
+   * hand keep their own state; everything else follows the default.
+   */
+  isFootnoteRefsExpanded(id: string): boolean {
+    const flipped = this.settings.footnoteRefsToggled.includes(id);
+    return flipped ? !this.settings.footnoteRefsExpanded : this.settings.footnoteRefsExpanded;
+  }
+
+  /** Flip one footnote away from the default and remember it. */
+  toggleFootnoteRefs(id: string): void {
+    const toggled = this.settings.footnoteRefsToggled;
+    this.settings.footnoteRefsToggled = toggled.includes(id)
+      ? toggled.filter((entry) => entry !== id)
+      : [...toggled, id];
+    void this.saveSettings();
+  }
+
+  /** Set every given footnote to `expanded`, dropping redundant overrides. */
+  setAllFootnoteRefsExpanded(ids: string[], expanded: boolean): void {
+    const others = this.settings.footnoteRefsToggled.filter((id) => !ids.includes(id));
+    this.settings.footnoteRefsToggled =
+      expanded === this.settings.footnoteRefsExpanded ? others : [...others, ...ids];
     void this.saveSettings();
   }
 
@@ -76,7 +97,6 @@ export default class NoteInspectorPlugin extends Plugin {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_NOTE_INSPECTOR)) {
       const view = leaf.view;
       if (view instanceof NoteInspectorView) {
-        view.syncFoldedFootnoteRefs();
         view.updateChrome();
         void view.render(true);
       }

@@ -38,15 +38,18 @@ panes. Every section folds on its own, and the fold state is remembered.
 
 ### Footnotes
 
+![Footnotes with the reference lines folded](docs/images/folded.png)
+
 - Numbered in reference order, matching the reading view, with the definition text
   rendered (links included) and the number of references per footnote.
 - **One click on a definition edits it** in place: <kbd>Cmd/Ctrl</kbd>+<kbd>Enter</kbd>
   or ✓ saves through the editor buffer (so <kbd>Cmd/Ctrl</kbd>+<kbd>Z</kbd> works),
   <kbd>Esc</kbd> or ✗ cancels, and clearing the text deletes the definition
   including its indented continuation lines.
-- **Reference rows fold away as a group** — click the “`N references`” label, or use
-  the button in the section header to fold every list at once. A definitions-only
-  reading layout is then two clicks away and survives restarts.
+- **Reference lines start folded**, so the list reads as definitions first: click a
+  “`N references`” label to open that footnote, or the section header button to open
+  them all. Turn on *Expand reference lists* in the settings to start expanded
+  instead. Whatever you choose is remembered.
 - Click a **number or id** to select the whole definition in the editor, or a
   **reference row** to select that exact `[^id]` marker.
 - Dangling references (`[^x]` with no definition) are found by scanning the note,
@@ -84,6 +87,7 @@ them in `<vault>/.obsidian/plugins/note-inspector/`, and enable the plugin in
 | Show heading level badges | off | Prefix outline entries with `H1`–`H6` |
 | Highlight current heading | on | Highlight the heading of the section the cursor is in |
 | Show footnote context | on | Preview the line each footnote reference sits on |
+| Expand reference lists | off | Open every footnote's reference lines straight away |
 | References shown per footnote | 8 | Longer lists collapse behind “Show more” |
 | Reset panel state | — | Restore default settings and fold state |
 
