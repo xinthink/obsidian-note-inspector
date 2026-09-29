@@ -463,7 +463,66 @@
 }
 
 .np-add-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 1px 2px;
+}
+
+.np-add-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.np-type-chip {
+  flex: 0 0 auto;
+  height: auto;
+  padding: 1px 7px;
+  font-size: var(--font-ui-smaller);
+  font-weight: normal;
+  color: var(--text-muted);
+  background-color: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: none;
+  cursor: var(--cursor);
+}
+
+.np-type-chip:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+}
+
+.np-type-chip.is-active {
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* `+ Add field` inside a nested object: light, inline, low-key. */
+.np-add-key {
+  padding: 1px 0 0;
+}
+
+.np-add-key > .np-add-button-inline {
+  display: inline-flex;
+  width: auto;
+  padding: 1px 6px;
+  color: var(--text-faint);
+  background-color: transparent;
+  border: none;
+}
+
+.np-add-key > .np-add-button-inline:hover {
+  color: var(--text-accent);
+  background-color: var(--background-modifier-hover);
+  border: none;
+}
+
+.np-add-button-inline .np-icon svg {
+  width: 12px;
+  height: 12px;
 }
 
 .np-add-item {

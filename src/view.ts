@@ -38,6 +38,8 @@ export class NotePanelView extends ItemView {
   private renderSeq = 0;
   /** Identity of the last rendered content, used to skip pointless rebuilds. */
   private lastRenderKey: string | null = null;
+  /** File + text identity, without the metadata cache version. */
+  private lastContentKey: string | null = null;
   /** Bumped whenever the metadata cache changes, to force a rebuild. */
   private cacheEpoch = 0;
   private readonly scheduleRender: () => void;
@@ -113,11 +115,16 @@ export class NotePanelView extends ItemView {
     const content = file ? await this.readContent(file) : "";
     if (seq !== this.renderSeq || !this.sectionsEl) return;
 
-    const key = file
-      ? `${file.path}\u0000${this.cacheEpoch}\u0000${content.length}:${hashString(content)}`
+    const contentKey = file
+      ? `${file.path}\u0000${content.length}:${hashString(content)}`
       : "none";
+    const key = `${contentKey}\u0000${this.cacheEpoch}`;
     if (!force && key === this.lastRenderKey) return;
+    // A cache-only refresh must not throw away an inline editor the user is
+    // typing into; the note text is unchanged, so defer until the next render.
+    if (!force && contentKey === this.lastContentKey && this.hasOpenEditor()) return;
     this.lastRenderKey = key;
+    this.lastContentKey = contentKey;
 
     const scrollTop = this.sectionsEl.scrollTop;
     this.renderHeader(file);
@@ -149,8 +156,14 @@ export class NotePanelView extends ItemView {
     this.sectionsEl.scrollTop = scrollTop;
   }
 
-  /** Cursor line of the note in the editor, when it is the focused one. */
-  getCursorLine(): number | null {
+  /** True while an inline editor is open anywhere in the panel. */
+  private hasOpenEditor(): boolean {
+    return (
+      this.sectionsEl?.querySelector(".np-edit-input, .np-edit-textarea") !== null
+    );
+  }
+
+  /** Cursor line of the note in the editor, when it is the focused one. */  getCursorLine(): number | null {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (!view || !this.currentFile) return null;
     if (view.file?.path !== this.currentFile.path) return null;

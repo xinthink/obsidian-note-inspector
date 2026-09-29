@@ -285,6 +285,7 @@ function renderItems(
     for (const [key, nested] of Object.entries(item)) {
       renderPropertyRow(body, ctx, [...itemPath, key], key, nested, depth + 1);
     }
+    renderAddKey(body, ctx, itemPath, item);
   });
 
   renderAddItem(list, ctx, path, value);
@@ -416,27 +417,76 @@ function renderObject(
   value: Record<string, unknown>,
   depth: number,
 ): void {
-  const entries = Object.entries(value);
-  if (entries.length === 0) {
-    host.createSpan({ cls: "np-value np-value-empty", text: "{}" });
-    return;
-  }
   if (depth >= MAX_DEPTH) {
     host.createEl("pre", { cls: "np-json", text: JSON.stringify(value, null, 2) });
     return;
   }
-  const box = host.createDiv({ cls: "np-object" });
-  for (const [key, nested] of entries) {
-    renderPropertyRow(box, ctx, [...path, key], key, nested, depth + 1);
+  const entries = Object.entries(value);
+  if (entries.length === 0) {
+    host.createSpan({ cls: "np-value np-value-empty", text: "{}" });
+  } else {
+    const box = host.createDiv({ cls: "np-object" });
+    for (const [key, nested] of entries) {
+      renderPropertyRow(box, ctx, [...path, key], key, nested, depth + 1);
+    }
   }
+  renderAddKey(host, ctx, path, value);
 }
 
+/** `＋ Add field` for a nested object (or an expanded record), creating `key: ""`. */
+function renderAddKey(
+  parent: HTMLElement,
+  ctx: SectionContext,
+  path: string[],
+  value: Record<string, unknown>,
+): void {
+  const existing = Object.keys(value);
+  const row = parent.createDiv({ cls: "np-add np-add-key" });
+  const showButton = () => {
+    row.empty();
+    const button = row.createEl("button", {
+      cls: "np-add-button np-add-button-inline",
+      attr: { type: "button" },
+    });
+    setIcon(button.createSpan({ cls: "np-icon" }), "plus");
+    button.createSpan({ text: t("addKey") });
+    button.addEventListener("click", () => {
+      row.empty();
+      const host = row.createDiv({ cls: "np-add-row" });
+      startInlineEdit(host, {
+        value: "",
+        placeholder: t("keyName"),
+        onCommit: (raw) => {
+          const key = raw.trim();
+          if (!key) {
+            ctx.scheduleRender();
+            return;
+          }
+          if (existing.includes(key)) {
+            new Notice(`${t("propertyExists")}${key}`);
+            ctx.scheduleRender();
+            return;
+          }
+          ctx.view.ui.pendingEditPath = [...path, key];
+          void applyPathEdit(ctx.app, ctx.file, path, {
+            op: "set",
+            value: { ...value, [key]: "" },
+          }).then(() => ctx.scheduleRender());
+        },
+        onCancel: () => ctx.scheduleRender(),
+      });
+    });
+  };
+  showButton();
+}
+
+/** New top-level property: pick text / list / dict first, then name it. */
 function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[]): void {
   const footer = body.createDiv({ cls: "np-add" });
   const showButton = () => {
     footer.empty();
     const button = footer.createEl("button", {
-      cls: "np-add-button",
+      cls: "np-add-button np-add-property",
       attr: { type: "button" },
     });
     setIcon(button.createSpan({ cls: "np-icon" }), "plus");
@@ -444,7 +494,37 @@ function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[
     button.addEventListener("click", () => {
       footer.empty();
       const host = footer.createDiv({ cls: "np-add-row" });
-      startInlineEdit(host, {
+      const types: Array<{ label: string; value: unknown }> = [
+        { label: t("typeText"), value: "" },
+        { label: t("typeList"), value: [] },
+        { label: t("typeDict"), value: {} },
+      ];
+      let selected = 0;
+      const chips = host.createDiv({ cls: "np-add-types" });
+      const chipButtons: HTMLButtonElement[] = [];
+      const applySelection = () => {
+        chipButtons.forEach((chip, index) =>
+          chip.toggleClass("is-active", index === selected),
+        );
+      };
+      types.forEach((type, index) => {
+        const chip = chips.createEl("button", {
+          cls: "np-type-chip",
+          text: type.label,
+          attr: { type: "button" },
+        });
+        // Prevent the input from blurring (and committing) on chip clicks.
+        chip.addEventListener("mousedown", (event) => event.preventDefault());
+        chip.addEventListener("click", () => {
+          selected = index;
+          applySelection();
+        });
+        chipButtons.push(chip);
+      });
+      applySelection();
+
+      const inputHost = host.createDiv({ cls: "np-add-input" });
+      startInlineEdit(inputHost, {
         value: "",
         placeholder: t("propertyName"),
         onCommit: (raw) => {
@@ -458,8 +538,9 @@ function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[
             ctx.scheduleRender();
             return;
           }
-          void addProperty(ctx.app, ctx.file, key, keys).then((ok) => {
-            if (ok) ctx.view.ui.pendingEditPath = [key];
+          const value = types[selected].value;
+          void addProperty(ctx.app, ctx.file, key, keys, value).then((ok) => {
+            if (ok && typeof value === "string") ctx.view.ui.pendingEditPath = [key];
             ctx.scheduleRender();
           });
         },

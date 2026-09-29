@@ -134,11 +134,12 @@ export async function addProperty(
   file: TFile,
   key: string,
   existing: string[],
+  value: unknown = "",
 ): Promise<boolean> {
   if (existing.includes(key)) {
     new Notice(`Note panel: ${key}`);
     return false;
   }
-  await applyPathEdit(app, file, [key], { op: "set", value: "" });
+  await applyPathEdit(app, file, [key], { op: "set", value });
   return true;
 }
