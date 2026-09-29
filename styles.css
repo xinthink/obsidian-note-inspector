@@ -353,9 +353,27 @@ button.ni-icon-button:hover {
   opacity: 0.9;
 }
 
-.ni-chip-add {
-  width: 18px;
-  height: 18px;
+/* The `+` that extends a scalar array: an empty chip, drawn like the others. */
+button.ni-chip-add {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: var(--text-muted);
+  background-color: transparent;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: none;
+}
+
+button.ni-chip-add:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+button.ni-chip-add svg {
+  width: 12px;
+  height: 12px;
 }
 
 /* -------------------------------------------------- arrays of records */
@@ -434,8 +452,11 @@ button.ni-item-toggle:hover {
   padding: 4px 2px 0;
 }
 
+/* Every "add an entry" control shares one look — dashed outline, plus icon,
+   muted until hover. Only the width differs: full width when it extends the
+   list it sits in, fit-content when it is nested one level deeper. */
 button.ni-add-button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   width: 100%;
@@ -505,27 +526,18 @@ button.ni-type-chip.is-active {
   border-color: var(--interactive-accent);
 }
 
-/* `+ Add field` inside a nested object: light, inline, low-key. */
+/* Nested one level deeper (`+ Add field` in a dict or record): same control,
+   only narrower so the hierarchy stays readable. */
 .ni-add-key {
   padding: 1px 0 0;
 }
 
-.ni-add-key > button.ni-add-button-inline {
-  display: inline-flex;
+button.ni-add-button-inline {
   width: auto;
   padding: 1px 6px;
-  color: var(--text-faint);
-  background-color: transparent;
-  border: none;
 }
 
-.ni-add-key > button.ni-add-button-inline:hover {
-  color: var(--text-accent);
-  background-color: var(--background-modifier-hover);
-  border: none;
-}
-
-.ni-add-button-inline .ni-icon svg {
+button.ni-add-button-inline .ni-icon svg {
   width: 12px;
   height: 12px;
 }
