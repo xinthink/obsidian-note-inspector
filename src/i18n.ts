@@ -172,7 +172,7 @@ export function setLocale(preference: PanelLanguage): void {
     activeLocale = preference;
     return;
   }
-  activeLocale = detectAppLocale() === "zh" ? "zh" : "en";
+  activeLocale = detectAppLocale().startsWith("zh") ? "zh" : "en";
 }
 
 function detectAppLocale(): string {

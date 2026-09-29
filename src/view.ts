@@ -5,7 +5,7 @@ import {
   debounce,
   type WorkspaceLeaf,
 } from "obsidian";
-import { t } from "./i18n";
+import { setLocale, t } from "./i18n";
 import type NoteInspectorPlugin from "./main";
 import { renderFootnotesSection } from "./sections/footnotes";
 import { renderOutlineSection } from "./sections/outline";
@@ -50,6 +50,25 @@ export class NoteInspectorView extends ItemView {
     this.plugin = plugin;
     this.navigation = false;
     this.scheduleRender = debounce(() => void this.render(), 120, true);
+  }
+
+  /**
+   * Refresh the chrome Obsidian rendered from the view title at creation time:
+   * the tab label and the view header. Both have to be re-labelled by hand
+   * after the panel language changes.
+   */
+  updateChrome(): void {
+    const title = this.getDisplayText();
+    const leaf = this.leaf as WorkspaceLeaf & {
+      updateHeader?: () => void;
+      tabHeaderInnerTitleEl?: HTMLElement;
+    };
+    leaf.updateHeader?.();
+    leaf.tabHeaderInnerTitleEl?.setText(title);
+    this.containerEl
+      .closest(".workspace-leaf")
+      ?.querySelector(".view-header-title")
+      ?.setText(title);
   }
 
   /** Re-seed the session fold state from the saved settings. */
@@ -117,6 +136,7 @@ export class NoteInspectorView extends ItemView {
    */
   async render(force = false): Promise<void> {
     if (!this.sectionsEl) return;
+    setLocale(this.plugin.settings.language);
     const seq = ++this.renderSeq;
     const file = this.resolveFile();
     const content = file ? await this.readContent(file) : "";

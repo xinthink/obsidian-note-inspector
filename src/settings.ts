@@ -11,6 +11,17 @@ export class NoteInspectorSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
+  /** Apply a language choice once, whichever way the control reports it. */
+  private setLanguage(value: PanelLanguage): void {
+    if (this.plugin.settings.language === value) return;
+    this.plugin.settings.language = value;
+    this.plugin.applyLanguage();
+    this.plugin.refreshViews();
+    void this.plugin.saveSettings();
+    // Rebuild the tab after the control has finished dispatching its event.
+    window.setTimeout(() => this.display(), 0);
+  }
+
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
@@ -19,20 +30,19 @@ export class NoteInspectorSettingTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(t("settings.language"))
       .setDesc(t("settings.languageDesc"))
-      .addDropdown((dropdown) =>
+      .addDropdown((dropdown) => {
         dropdown
           .addOption("auto", t("settings.languageAuto"))
           .addOption("en", t("settings.languageEn"))
           .addOption("zh", t("settings.languageZh"))
           .setValue(this.plugin.settings.language)
-          .onChange(async (value) => {
-            this.plugin.settings.language = value as PanelLanguage;
-            await this.plugin.saveSettings();
-            this.plugin.applyLanguage();
-            this.plugin.refreshViews();
-            this.display();
-          }),
-      );
+          .onChange((value) => this.setLanguage(value as PanelLanguage));
+        // Belt and braces: apply the change even if the component's own
+        // callback is bypassed.
+        dropdown.selectEl?.addEventListener("change", () =>
+          this.setLanguage(dropdown.getValue() as PanelLanguage),
+        );
+      });
 
     new Setting(containerEl)
       .setName(t("settings.showCounts"))
