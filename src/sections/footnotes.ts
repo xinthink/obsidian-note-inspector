@@ -16,6 +16,10 @@ interface FootnoteGroup {
 export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext): void {
   const settings = ctx.plugin.settings;
   const groups = collectGroups(ctx);
+  const withRefs = groups.filter((group) => group.references.length > 0);
+  const allFolded =
+    withRefs.length > 0 &&
+    withRefs.every((group) => ctx.view.ui.collapsedFootnoteRefs.has(group.id));
 
   createCollapsibleSection(parent, {
     id: "footnotes",
@@ -24,6 +28,20 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
     count: groups.length,
     showCount: settings.showCounts,
     onToggle: (collapsed) => ctx.plugin.setSectionCollapsed("footnotes", collapsed),
+    buildActions: (bar) => {
+      if (withRefs.length === 0) return;
+      iconButton(bar, {
+        icon: allFolded ? "chevrons-up-down" : "chevrons-down-up",
+        label: allFolded ? t("expandAllReferences") : t("collapseAllReferences"),
+        onClick: () => {
+          for (const group of withRefs) {
+            if (allFolded) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
+            else ctx.view.ui.collapsedFootnoteRefs.add(group.id);
+          }
+          ctx.refresh();
+        },
+      });
+    },
     buildBody: (body) => {
       if (groups.length === 0) {
         emptyState(body, t("footnotesEmpty"));
@@ -119,28 +137,63 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
   if (group.references.length === 0) card.addClass("is-unused");
 
   const head = card.createDiv({ cls: "np-fn-head" });
-  head.createSpan({
+
+  // Badge + id are the "go to source" target now that the definition body
+  // edits on a single click.
+  const index = head.createSpan({
     cls: "np-fn-index",
     text: group.index === null ? "·" : String(group.index),
   });
   const idEl = head.createSpan({ cls: "np-fn-id", text: group.id });
-  idEl.title = group.id;
+  idEl.title = t("selectInNote");
+  index.title = t("selectInNote");
+  const selectInNote = () => {
+    if (!group.definition) return;
+    const span = definitionSpan(ctx, group.definition);
+    ctx.navigate({
+      line: span.start,
+      ch: 0,
+      endLine: span.end,
+      endCh: (ctx.lines[span.end] ?? "").length,
+    });
+  };
+  index.addEventListener("click", selectInNote);
+  idEl.addEventListener("click", selectInNote);
 
-  const meta = head.createSpan({ cls: "np-fn-meta" });
-  if (!group.definition) {
-    meta.setText(t("footnoteMissing"));
-  } else if (group.references.length === 0) {
-    meta.setText(t("footnoteUnused"));
-  } else {
-    meta.setText(
+  const collapsed = ctx.view.ui.collapsedFootnoteRefs.has(group.id);
+  if (group.references.length === 0) {
+    const meta = head.createSpan({ cls: "np-fn-meta" });
+    meta.setText(group.definition ? t("footnoteUnused") : t("footnoteMissing"));
+    renderDefinition(card, head, ctx, group);
+    return;
+  }
+
+  const toggle = head.createEl("button", {
+    cls: "np-fn-meta np-fn-refs-toggle",
+    attr: {
+      type: "button",
+      "aria-expanded": String(!collapsed),
+      title: collapsed ? t("expandReferences") : t("collapseReferences"),
+    },
+  });
+  toggle.createSpan({
+    text:
       group.references.length === 1
         ? t("footnoteReferenceOne")
         : t("footnoteReferenceMany", { n: group.references.length }),
-    );
-  }
+  });
+  const chevron = toggle.createSpan({ cls: "np-fn-toggle-chevron" });
+  setIcon(chevron, collapsed ? "chevron-right" : "chevron-down");
+  toggle.addEventListener("click", () => {
+    if (collapsed) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
+    else ctx.view.ui.collapsedFootnoteRefs.add(group.id);
+    ctx.refresh();
+  });
 
   renderDefinition(card, head, ctx, group);
-  if (ctx.plugin.settings.showFootnoteContext) renderReferences(card, ctx, group);
+  if (!collapsed && ctx.plugin.settings.showFootnoteContext) {
+    renderReferences(card, ctx, group);
+  }
 }
 
 function renderDefinition(
@@ -153,6 +206,11 @@ function renderDefinition(
   if (!group.definition) {
     host.addClass("is-missing");
     host.createSpan({ text: t("footnoteMissing") });
+    host.title = t("addDefinition");
+    host.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("button")) return;
+      startDefinitionEdit(host, ctx, group, "", null);
+    });
     const actions = actionBar(head);
     iconButton(actions, {
       icon: "plus",
@@ -170,16 +228,12 @@ function renderDefinition(
   const textEl = host.createDiv({ cls: "np-fn-def-text" });
   if (clampable && !expanded) textEl.addClass("is-clamped");
   appendRichText(textEl, text, ctx);
-  host.title = t("selectInNote");
+  host.title = t("clickToEdit");
+  // A single click on the definition drops straight into editing.
   host.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
     if (target.closest("button") || target.closest("a")) return;
-    ctx.navigate({
-      line: span.start,
-      ch: 0,
-      endLine: span.end,
-      endCh: (ctx.lines[span.end] ?? "").length,
-    });
+    startDefinitionEdit(host, ctx, group, text, span);
   });
 
   if (clampable) {
@@ -194,16 +248,9 @@ function renderDefinition(
       event.stopPropagation();
       if (expanded) ctx.view.ui.expandedFootnoteDefs.delete(group.id);
       else ctx.view.ui.expandedFootnoteDefs.add(group.id);
-      ctx.scheduleRender();
+      ctx.refresh();
     });
   }
-
-  const actions = actionBar(head);
-  iconButton(actions, {
-    icon: "pencil",
-    label: t("editDefinition"),
-    onClick: () => startDefinitionEdit(host, ctx, group, text, span),
-  });
 }
 
 /** Edit the definition text in place; an empty result deletes the definition. */
@@ -224,7 +271,7 @@ function startDefinitionEdit(
       const definition = group.definition;
       const normalized = next.replace(/\r\n?/g, "\n").trim();
       if (definition && normalized === current.trim()) {
-        ctx.scheduleRender();
+        ctx.refresh();
         return;
       }
       const serialized = serializeDefinition(group.id, normalized);
@@ -237,9 +284,9 @@ function startDefinitionEdit(
       } else {
         ctx.editLines(span.start, span.end, serialized);
       }
-      ctx.scheduleRender();
+      ctx.refresh();
     },
-    onCancel: () => ctx.scheduleRender(),
+    onCancel: () => ctx.refresh(),
   });
 }
 
@@ -291,7 +338,7 @@ function renderReferences(
   toggle.addEventListener("click", () => {
     if (expanded) ctx.view.ui.expandedFootnoteRefs.delete(group.id);
     else ctx.view.ui.expandedFootnoteRefs.add(group.id);
-    ctx.scheduleRender();
+    ctx.refresh();
   });
 }
 

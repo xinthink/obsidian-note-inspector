@@ -674,11 +674,6 @@ button.np-type-chip.is-active {
   pointer-events: auto;
 }
 
-/* The edit button lands exactly where the reference count sits. */
-.np-fn:hover .np-fn-meta {
-  visibility: hidden;
-}
-
 .np-fn-index {
   flex: 0 0 auto;
   min-width: 18px;
@@ -688,6 +683,8 @@ button.np-type-chip.is-active {
   font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   background-color: var(--background-modifier-hover);
+  cursor: var(--cursor);
+  border-radius: 10px;
   border-radius: 10px;
 }
 
@@ -700,6 +697,7 @@ button.np-type-chip.is-active {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: var(--cursor);
 }
 
 .np-fn-meta {
@@ -707,6 +705,43 @@ button.np-type-chip.is-active {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   white-space: nowrap;
+}
+
+/* Reference count doubles as the fold/unfold control of the reference rows. */
+button.np-fn-refs-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: auto;
+  padding: 0 4px;
+  font-size: var(--font-ui-smaller);
+  font-weight: normal;
+  color: var(--text-muted);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  box-shadow: none;
+  cursor: var(--cursor);
+}
+
+button.np-fn-refs-toggle:hover {
+  color: var(--text-accent);
+  background-color: var(--background-modifier-hover);
+}
+
+.np-fn-toggle-chevron {
+  display: flex;
+  align-items: center;
+}
+
+.np-fn-toggle-chevron svg {
+  width: 12px;
+  height: 12px;
+}
+
+.np-fn-index:hover,
+.np-fn-id:hover {
+  color: var(--text-accent);
 }
 
 .np-fn.is-undefined .np-fn-meta {
@@ -717,7 +752,8 @@ button.np-type-chip.is-active {
   padding: 2px 0;
   font-size: var(--font-ui-small);
   color: var(--text-normal);
-  cursor: var(--cursor);
+  /* One click drops into the editor, so the text cursor is the right hint. */
+  cursor: text;
   border-radius: var(--radius-s);
 }
 
@@ -728,7 +764,6 @@ button.np-type-chip.is-active {
 .np-fn-def.is-missing {
   color: var(--text-error);
   font-style: italic;
-  cursor: default;
 }
 
 .np-fn-def-text {

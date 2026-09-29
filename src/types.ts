@@ -70,8 +70,12 @@ export interface SectionContext {
   navigate(target: LineRange): void;
   /** Replace an inclusive line range (editor buffer first, so undo works). */
   editLines(start: number, end: number, text: string): void;
-  /** Ask the view for another render pass (after a mutation). */
-  scheduleRender(): void;
+  /**
+   * Rebuild the panel after a user action (a write, a fold, a mode change).
+   * Unlike the event-driven refresh this one always applies, because panel
+   * state such as folded reference lists lives only in the DOM.
+   */
+  refresh(): void;
 }
 
 /** Mutable, non-persisted UI state that must survive re-renders. */
@@ -80,6 +84,8 @@ export interface PanelUiState {
   expandedFootnoteRefs: Set<string>;
   /** Footnote ids whose definition text is un-clamped. */
   expandedFootnoteDefs: Set<string>;
+  /** Footnote ids whose reference rows are folded away. */
+  collapsedFootnoteRefs: Set<string>;
   /** Property path to focus with an inline editor right after a render. */
   pendingEditPath: string[] | null;
   /** Array items (keyed by `file path::property path`) expanded to full detail. */

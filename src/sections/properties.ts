@@ -71,7 +71,7 @@ function renderPropertyRow(
     label: t("deleteProperty"),
     onClick: () => {
       void applyPathEdit(ctx.app, ctx.file, path, { op: "delete" }).then(() =>
-        ctx.scheduleRender(),
+        ctx.refresh(),
       );
     },
   });
@@ -146,7 +146,7 @@ function renderBoolean(
   input.checked = value;
   input.addEventListener("change", () => {
     void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: input.checked }).then(() =>
-      ctx.scheduleRender(),
+      ctx.refresh(),
     );
   });
 }
@@ -180,10 +180,10 @@ function startScalarEdit(
         next = Number(raw);
       }
       void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: next }).then(() =>
-        ctx.scheduleRender(),
+        ctx.refresh(),
       );
     },
-    onCancel: () => ctx.scheduleRender(),
+    onCancel: () => ctx.refresh(),
   });
 }
 
@@ -261,7 +261,7 @@ function renderItems(
     toggle.addEventListener("click", () => {
       if (expanded) ctx.view.ui.expandedItems.delete(stateKey);
       else ctx.view.ui.expandedItems.add(stateKey);
-      ctx.scheduleRender();
+      ctx.refresh();
     });
 
     const actions = actionBar(itemEl);
@@ -275,7 +275,7 @@ function renderItems(
       label: t("removeItem"),
       onClick: () => {
         void applyPathEdit(ctx.app, ctx.file, itemPath, { op: "delete" }).then(() =>
-          ctx.scheduleRender(),
+          ctx.refresh(),
         );
       },
     });
@@ -319,7 +319,7 @@ function renderAddItem(
     void applyPathEdit(ctx.app, ctx.file, path, {
       op: "set",
       value: [...value, template],
-    }).then(() => ctx.scheduleRender());
+    }).then(() => ctx.refresh());
   });
 }
 
@@ -377,7 +377,7 @@ function renderChips(
       cls: "np-chip-remove",
       onClick: () => {
         void applyPathEdit(ctx.app, ctx.file, [...path, String(index)], { op: "delete" }).then(
-          () => ctx.scheduleRender(),
+          () => ctx.refresh(),
         );
       },
     });
@@ -388,7 +388,7 @@ function renderChips(
     cls: "np-chip-add",
     onClick: () => {
       void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: [...value, ""] }).then(
-        () => ctx.scheduleRender(),
+        () => ctx.refresh(),
       );
     },
   });
@@ -459,21 +459,21 @@ function renderAddKey(
         onCommit: (raw) => {
           const key = raw.trim();
           if (!key) {
-            ctx.scheduleRender();
+            ctx.refresh();
             return;
           }
           if (existing.includes(key)) {
             new Notice(`${t("propertyExists")}${key}`);
-            ctx.scheduleRender();
+            ctx.refresh();
             return;
           }
           ctx.view.ui.pendingEditPath = [...path, key];
           void applyPathEdit(ctx.app, ctx.file, path, {
             op: "set",
             value: { ...value, [key]: "" },
-          }).then(() => ctx.scheduleRender());
+          }).then(() => ctx.refresh());
         },
-        onCancel: () => ctx.scheduleRender(),
+        onCancel: () => ctx.refresh(),
       });
     });
   };
@@ -530,21 +530,21 @@ function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[
         onCommit: (raw) => {
           const key = raw.trim();
           if (!key) {
-            ctx.scheduleRender();
+            ctx.refresh();
             return;
           }
           if (keys.includes(key)) {
             new Notice(`${t("propertyExists")}${key}`);
-            ctx.scheduleRender();
+            ctx.refresh();
             return;
           }
           const value = types[selected].value;
           void addProperty(ctx.app, ctx.file, key, keys, value).then((ok) => {
             if (ok && typeof value === "string") ctx.view.ui.pendingEditPath = [key];
-            ctx.scheduleRender();
+            ctx.refresh();
           });
         },
-        onCancel: () => ctx.scheduleRender(),
+        onCancel: () => ctx.refresh(),
       });
     });
   };

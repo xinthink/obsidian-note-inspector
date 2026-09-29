@@ -28,6 +28,7 @@ export class NotePanelView extends ItemView {
   readonly ui: PanelUiState = {
     expandedFootnoteRefs: new Set<string>(),
     expandedFootnoteDefs: new Set<string>(),
+    collapsedFootnoteRefs: new Set<string>(),
     pendingEditPath: null,
     expandedItems: new Set<string>(),
   };
@@ -146,7 +147,7 @@ export class NotePanelView extends ItemView {
       cache: this.app.metadataCache.getFileCache(file),
       navigate: (target) => void this.navigateToRange(file, target),
       editLines: (start, end, text) => this.editLines(file, start, end, text),
-      scheduleRender: () => this.scheduleRender(),
+      refresh: () => void this.render(true),
     };
 
     renderPropertiesSection(this.sectionsEl, ctx);
