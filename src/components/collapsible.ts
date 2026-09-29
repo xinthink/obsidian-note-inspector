@@ -29,32 +29,32 @@ export function createCollapsibleSection(
   parent: HTMLElement,
   options: CollapsibleSectionOptions,
 ): CollapsibleSectionHandle {
-  const root = parent.createDiv({ cls: "np-section" });
+  const root = parent.createDiv({ cls: "ni-section" });
   root.dataset.section = options.id;
 
   const header = root.createDiv({
-    cls: "np-section-header",
+    cls: "ni-section-header",
     attr: {
       role: "button",
       tabindex: "0",
       "aria-expanded": String(!options.collapsed),
-      "aria-controls": `np-body-${options.id}`,
+      "aria-controls": `ni-body-${options.id}`,
     },
   });
 
-  const chevron = header.createSpan({ cls: "np-chevron" });
+  const chevron = header.createSpan({ cls: "ni-chevron" });
   setIcon(chevron, options.collapsed ? "chevron-right" : "chevron-down");
 
-  header.createSpan({ cls: "np-section-title", text: options.title });
+  header.createSpan({ cls: "ni-section-title", text: options.title });
 
   if (options.showCount && options.count > 0) {
-    header.createSpan({ cls: "np-section-count", text: String(options.count) });
+    header.createSpan({ cls: "ni-section-count", text: String(options.count) });
   }
 
-  const actions = header.createDiv({ cls: "np-section-actions" });
+  const actions = header.createDiv({ cls: "ni-section-actions" });
   options.buildActions?.(actions);
 
-  const body = root.createDiv({ cls: "np-section-body", attr: { id: `np-body-${options.id}` } });
+  const body = root.createDiv({ cls: "ni-section-body", attr: { id: `ni-body-${options.id}` } });
 
   const apply = (collapsed: boolean) => {
     root.toggleClass("is-collapsed", collapsed);
@@ -73,7 +73,7 @@ export function createCollapsibleSection(
   };
 
   header.addEventListener("click", (event) => {
-    if ((event.target as HTMLElement).closest(".np-section-actions")) return;
+    if ((event.target as HTMLElement).closest(".ni-section-actions")) return;
     toggle();
   });
   header.addEventListener("keydown", (event) => {

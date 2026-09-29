@@ -1,12 +1,12 @@
 import { PluginSettingTab, Setting, type App } from "obsidian";
 import { t } from "./i18n";
-import type NotePanelPlugin from "./main";
+import type NoteInspectorPlugin from "./main";
 import { cloneDefaultSettings, type PanelLanguage } from "./types";
 
-export class NotePanelSettingTab extends PluginSettingTab {
-  private readonly plugin: NotePanelPlugin;
+export class NoteInspectorSettingTab extends PluginSettingTab {
+  private readonly plugin: NoteInspectorPlugin;
 
-  constructor(app: App, plugin: NotePanelPlugin) {
+  constructor(app: App, plugin: NoteInspectorPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
@@ -14,7 +14,7 @@ export class NotePanelSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.addClass("note-panel-settings");
+    containerEl.addClass("note-inspector-settings");
 
     new Setting(containerEl)
       .setName(t("settings.language"))

@@ -1,47 +1,47 @@
 import { Plugin, type WorkspaceLeaf } from "obsidian";
 import { setLocale, t } from "./i18n";
-import { NotePanelSettingTab } from "./settings";
-import { cloneDefaultSettings, type NotePanelSettings, type SectionId } from "./types";
-import { NOTE_PANEL_VIEW_TYPE, NotePanelView } from "./view";
+import { NoteInspectorSettingTab } from "./settings";
+import { cloneDefaultSettings, type NoteInspectorSettings, type SectionId } from "./types";
+import { VIEW_TYPE_NOTE_INSPECTOR, NoteInspectorView } from "./view";
 
-export default class NotePanelPlugin extends Plugin {
-  settings: NotePanelSettings = cloneDefaultSettings();
+export default class NoteInspectorPlugin extends Plugin {
+  settings: NoteInspectorSettings = cloneDefaultSettings();
 
   async onload(): Promise<void> {
     await this.loadSettings();
     setLocale(this.settings.language);
 
-    this.registerView(NOTE_PANEL_VIEW_TYPE, (leaf) => new NotePanelView(leaf, this));
+    this.registerView(VIEW_TYPE_NOTE_INSPECTOR, (leaf) => new NoteInspectorView(leaf, this));
 
-    this.addRibbonIcon("panel-right", t("openPanel"), () => void this.activateView());
+    this.addRibbonIcon("list-tree", t("openPanel"), () => void this.activateView());
     this.addCommand({
-      id: "open-note-panel",
+      id: "open-note-inspector",
       name: t("openPanel"),
       callback: () => void this.activateView(),
     });
 
-    this.addSettingTab(new NotePanelSettingTab(this.app, this));
+    this.addSettingTab(new NoteInspectorSettingTab(this.app, this));
   }
 
   onunload(): void {
-    this.app.workspace.detachLeavesOfType(NOTE_PANEL_VIEW_TYPE);
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_NOTE_INSPECTOR);
   }
 
   /** Reveal the panel, creating it in the right sidebar on first use. */
   async activateView(): Promise<void> {
     const { workspace } = this.app;
     let leaf: WorkspaceLeaf | null =
-      workspace.getLeavesOfType(NOTE_PANEL_VIEW_TYPE)[0] ?? null;
+      workspace.getLeavesOfType(VIEW_TYPE_NOTE_INSPECTOR)[0] ?? null;
     if (!leaf) {
       leaf = workspace.getRightLeaf(false);
       if (!leaf) return;
-      await leaf.setViewState({ type: NOTE_PANEL_VIEW_TYPE, active: true });
+      await leaf.setViewState({ type: VIEW_TYPE_NOTE_INSPECTOR, active: true });
     }
     await workspace.revealLeaf(leaf);
   }
 
   async loadSettings(): Promise<void> {
-    const stored = (await this.loadData()) as Partial<NotePanelSettings> | null;
+    const stored = (await this.loadData()) as Partial<NoteInspectorSettings> | null;
     const defaults = cloneDefaultSettings();
     this.settings = {
       ...defaults,
@@ -67,9 +67,9 @@ export default class NotePanelPlugin extends Plugin {
 
   /** Re-render every open panel (used after settings or language changes). */
   refreshViews(): void {
-    for (const leaf of this.app.workspace.getLeavesOfType(NOTE_PANEL_VIEW_TYPE)) {
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_NOTE_INSPECTOR)) {
       const view = leaf.view;
-      if (view instanceof NotePanelView) void view.render(true);
+      if (view instanceof NoteInspectorView) void view.render(true);
     }
   }
 }

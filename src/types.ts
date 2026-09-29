@@ -1,13 +1,13 @@
 import type { App, CachedMetadata, TFile } from "obsidian";
-import type NotePanelPlugin from "./main";
-import type { NotePanelView } from "./view";
+import type NoteInspectorPlugin from "./main";
+import type { NoteInspectorView } from "./view";
 
 /** The three stacked, collapsible parts of the panel. */
 export type SectionId = "properties" | "outline" | "footnotes";
 
 export const SECTION_IDS: SectionId[] = ["properties", "outline", "footnotes"];
 
-export interface NotePanelSettings {
+export interface NoteInspectorSettings {
   /** Remembered collapsed/expanded state of every section. */
   collapsed: Record<SectionId, boolean>;
   /** Show the number of items next to a section title. */
@@ -27,7 +27,7 @@ export interface NotePanelSettings {
 
 export type PanelLanguage = "auto" | "en" | "zh";
 
-export const DEFAULT_SETTINGS: NotePanelSettings = {
+export const DEFAULT_SETTINGS: NoteInspectorSettings = {
   collapsed: {
     properties: false,
     outline: false,
@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS: NotePanelSettings = {
 };
 
 /** Fresh copy of the defaults, safe to mutate. */
-export function cloneDefaultSettings(): NotePanelSettings {
+export function cloneDefaultSettings(): NoteInspectorSettings {
   return { ...DEFAULT_SETTINGS, collapsed: { ...DEFAULT_SETTINGS.collapsed } };
 }
 
@@ -58,8 +58,8 @@ export interface LineRange {
 /** Everything a section renderer needs; built once per render pass. */
 export interface SectionContext {
   app: App;
-  plugin: NotePanelPlugin;
-  view: NotePanelView;
+  plugin: NoteInspectorPlugin;
+  view: NoteInspectorView;
   file: TFile;
   /** Current text of the note (editor buffer when available, else disk). */
   content: string;

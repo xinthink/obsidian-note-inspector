@@ -1,8 +1,10 @@
-# Note Panel
+# Note Inspector
 
 把 Obsidian 内置的 **File properties（Frontmatter）**、**Outline**、**Footnotes** 三个视图合并到一个侧边面板里，少在三个视图之间来回切换。
 
 三个分区各自可以折叠，**折叠状态会记住并恢复**（写在插件 `data.json` 里），方便按需只看其中一部分。
+
+名字里的 *inspector* 取「检查器」之意：像开发者工具的检查器那样，选中一篇笔记就给出它的**属性（attributes）、结构（hierarchy）、引用（references）**。图标用 `list-tree`（结构化的列表），与内置三件套的图标（`info` / `list` / `file-signature`）都不重样。
 
 ```
 ┌─ ai-时代的软件工程            ⌄⌃ ⟳ ─┐
@@ -48,7 +50,7 @@
 - 顶部显示当前笔记名，右侧两个按钮：全部折叠/全部展开、刷新。
 - 分区标题显示条目数量（可关闭）。
 - 跟随当前聚焦的笔记；点击面板本身不会让内容消失（会保持上一篇）。
-- 命令面板 / 左侧 ribbon 图标：**Open note panel**。
+- 命令面板 / 左侧 ribbon 图标：**Open note inspector**。
 
 ## 安装
 
@@ -56,11 +58,11 @@
 
 ```bash
 VAULT="/path/to/your/vault"
-mkdir -p "$VAULT/.obsidian/plugins/note-panel"
-cp manifest.json main.js styles.css "$VAULT/.obsidian/plugins/note-panel/"
+mkdir -p "$VAULT/.obsidian/plugins/note-inspector"
+cp manifest.json main.js styles.css "$VAULT/.obsidian/plugins/note-inspector/"
 ```
 
-然后在 Obsidian 的 **设置 → 第三方插件** 里启用 **Note Panel**（需要先关闭受限模式）。
+然后在 Obsidian 的 **设置 → 第三方插件** 里启用 **Note Inspector**（需要先关闭受限模式）。
 
 ## 开发
 
@@ -82,7 +84,7 @@ npm run deploy     # 把 main.js / manifest.json / styles.css 复制进 vault
 改代码后重载插件：
 
 ```bash
-obsidian plugin:reload id=note-panel
+obsidian plugin:reload id=note-inspector
 obsidian dev:errors
 ```
 
@@ -115,7 +117,7 @@ obsidian dev:errors
 ```
 src/
 ├── main.ts                 插件入口：注册视图、命令、ribbon、设置页
-├── view.ts                 NotePanelView：跟随活动笔记、分区装配、定位/选中、按需重建
+├── view.ts                 NoteInspectorView：跟随活动笔记、分区装配、定位/选中、按需重建
 ├── settings.ts             设置页
 ├── i18n.ts                 中英文案
 ├── types.ts                设置类型与分区上下文（navigate / editLines）

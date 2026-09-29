@@ -6,8 +6,8 @@ import type { PanelLanguage } from "./types";
  * (`auto`) unless the user pins one in the settings tab.
  */
 const en = {
-  panelName: "Note panel",
-  openPanel: "Open note panel",
+  panelName: "Note inspector",
+  openPanel: "Open note inspector",
   expandAll: "Expand all sections",
   collapseAll: "Collapse all sections",
   refresh: "Refresh",
@@ -79,15 +79,15 @@ const en = {
     reset: "Reset panel state",
     resetDesc: "Restore the default collapsed state and settings.",
     resetButton: "Reset",
-    resetDone: "Note panel settings reset.",
+    resetDone: "Note inspector settings reset.",
   },
 };
 
 type Dict = typeof en;
 
 const zh: Dict = {
-  panelName: "笔记面板",
-  openPanel: "打开笔记面板",
+  panelName: "笔记检查器",
+  openPanel: "打开笔记检查器",
   expandAll: "展开全部",
   collapseAll: "折叠全部",
   refresh: "刷新",
@@ -158,7 +158,7 @@ const zh: Dict = {
     reset: "重置面板状态",
     resetDesc: "恢复默认的折叠状态与全部设置。",
     resetButton: "重置",
-    resetDone: "笔记面板设置已重置。",
+    resetDone: "笔记检查器设置已重置。",
   },
 };
 

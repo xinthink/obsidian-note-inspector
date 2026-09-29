@@ -116,7 +116,7 @@ export async function applyPathEdit(
       }
     });
   } catch (error) {
-    new Notice(`Note panel: ${error instanceof Error ? error.message : String(error)}`);
+    new Notice(`Note inspector: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -137,7 +137,7 @@ export async function addProperty(
   value: unknown = "",
 ): Promise<boolean> {
   if (existing.includes(key)) {
-    new Notice(`Note panel: ${key}`);
+    new Notice(`Note inspector: ${key}`);
     return false;
   }
   await applyPathEdit(app, file, [key], { op: "set", value });

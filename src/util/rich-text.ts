@@ -18,7 +18,7 @@ export function appendRichText(
     }
     if (token.kind === "internal") {
       const anchor = host.createEl("a", {
-        cls: "np-link internal-link",
+        cls: "ni-link internal-link",
         text: token.text,
         href: token.target,
       });
@@ -30,7 +30,7 @@ export function appendRichText(
     }
     const external = token.kind === "external" || /^https?:\/\//.test(token.target);
     const anchor = host.createEl("a", {
-      cls: `np-link ${external ? "external-link" : "internal-link"}`,
+      cls: `ni-link ${external ? "external-link" : "internal-link"}`,
       text: external ? shortenUrl(token.text) : token.text,
       href: token.target,
       attr: { title: token.target },

@@ -49,7 +49,7 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
         emptyState(body, t("footnotesEmpty"));
         return;
       }
-      const list = body.createDiv({ cls: "np-footnotes" });
+      const list = body.createDiv({ cls: "ni-footnotes" });
       for (const group of groups) renderFootnote(list, ctx, group);
     },
   });
@@ -134,19 +134,19 @@ function orderKey(group: FootnoteGroup): number {
 }
 
 function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: FootnoteGroup): void {
-  const card = parent.createDiv({ cls: "np-fn" });
+  const card = parent.createDiv({ cls: "ni-fn" });
   if (!group.definition) card.addClass("is-undefined");
   if (group.references.length === 0) card.addClass("is-unused");
 
-  const head = card.createDiv({ cls: "np-fn-head" });
+  const head = card.createDiv({ cls: "ni-fn-head" });
 
   // Badge + id are the "go to source" target now that the definition body
   // edits on a single click.
   const index = head.createSpan({
-    cls: "np-fn-index",
+    cls: "ni-fn-index",
     text: group.index === null ? "·" : String(group.index),
   });
-  const idEl = head.createSpan({ cls: "np-fn-id", text: group.id });
+  const idEl = head.createSpan({ cls: "ni-fn-id", text: group.id });
   idEl.title = t("selectInNote");
   index.title = t("selectInNote");
   const selectInNote = () => {
@@ -164,14 +164,14 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
 
   const collapsed = ctx.view.ui.collapsedFootnoteRefs.has(group.id);
   if (group.references.length === 0) {
-    const meta = head.createSpan({ cls: "np-fn-meta" });
+    const meta = head.createSpan({ cls: "ni-fn-meta" });
     meta.setText(group.definition ? t("footnoteUnused") : t("footnoteMissing"));
     renderDefinition(card, head, ctx, group);
     return;
   }
 
   const toggle = head.createEl("button", {
-    cls: "np-fn-meta np-fn-refs-toggle",
+    cls: "ni-fn-meta ni-fn-refs-toggle",
     attr: {
       type: "button",
       "aria-expanded": String(!collapsed),
@@ -184,7 +184,7 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
         ? t("footnoteReferenceOne")
         : t("footnoteReferenceMany", { n: group.references.length }),
   });
-  const chevron = toggle.createSpan({ cls: "np-fn-toggle-chevron" });
+  const chevron = toggle.createSpan({ cls: "ni-fn-toggle-chevron" });
   setIcon(chevron, collapsed ? "chevron-right" : "chevron-down");
   toggle.addEventListener("click", () => {
     if (collapsed) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
@@ -204,7 +204,7 @@ function renderDefinition(
   ctx: SectionContext,
   group: FootnoteGroup,
 ): void {
-  const host = parent.createDiv({ cls: "np-fn-def" });
+  const host = parent.createDiv({ cls: "ni-fn-def" });
   if (!group.definition) {
     host.addClass("is-missing");
     host.createSpan({ text: t("footnoteMissing") });
@@ -227,7 +227,7 @@ function renderDefinition(
   const expanded = ctx.view.ui.expandedFootnoteDefs.has(group.id);
   const clampable = text.length > 180 || text.includes("\n");
 
-  const textEl = host.createDiv({ cls: "np-fn-def-text" });
+  const textEl = host.createDiv({ cls: "ni-fn-def-text" });
   if (clampable && !expanded) textEl.addClass("is-clamped");
   appendRichText(textEl, text, ctx);
   host.title = t("clickToEdit");
@@ -240,11 +240,11 @@ function renderDefinition(
 
   if (clampable) {
     const toggle = host.createEl("button", {
-      cls: "np-more",
+      cls: "ni-more",
       attr: { type: "button" },
     });
     toggle.createSpan({ text: expanded ? t("showLess") : t("showMore") });
-    const chevron = toggle.createSpan({ cls: "np-more-chevron" });
+    const chevron = toggle.createSpan({ cls: "ni-more-chevron" });
     setIcon(chevron, expanded ? "chevron-up" : "chevron-down");
     toggle.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -307,17 +307,17 @@ function renderReferences(
   group: FootnoteGroup,
 ): void {
   if (group.references.length === 0) return;
-  const host = parent.createDiv({ cls: "np-fn-refs" });
+  const host = parent.createDiv({ cls: "ni-fn-refs" });
   const limit = Math.max(1, ctx.plugin.settings.footnoteRefLimit);
   const expanded = ctx.view.ui.expandedFootnoteRefs.has(group.id);
   const visible = expanded ? group.references : group.references.slice(0, limit);
 
   for (const ref of visible) {
     const line = ref.position.start.line;
-    const row = host.createDiv({ cls: "np-fn-ref" });
+    const row = host.createDiv({ cls: "ni-fn-ref" });
     row.title = t("selectInNote");
-    row.createSpan({ cls: "np-fn-ref-line", text: `L${line + 1}` });
-    row.createSpan({ cls: "np-fn-ref-text", text: lineContext(ctx, line, group.id) });
+    row.createSpan({ cls: "ni-fn-ref-line", text: `L${line + 1}` });
+    row.createSpan({ cls: "ni-fn-ref-text", text: lineContext(ctx, line, group.id) });
     row.addEventListener("click", () =>
       ctx.navigate({
         line,
@@ -329,13 +329,13 @@ function renderReferences(
   }
 
   if (group.references.length <= limit) return;
-  const toggle = host.createEl("button", { cls: "np-more", attr: { type: "button" } });
+  const toggle = host.createEl("button", { cls: "ni-more", attr: { type: "button" } });
   toggle.createSpan({
     text: expanded
       ? t("showLess")
       : t("showMore") + ` (${group.references.length - limit})`,
   });
-  const chevron = toggle.createSpan({ cls: "np-more-chevron" });
+  const chevron = toggle.createSpan({ cls: "ni-more-chevron" });
   setIcon(chevron, expanded ? "chevron-up" : "chevron-down");
   toggle.addEventListener("click", () => {
     if (expanded) ctx.view.ui.expandedFootnoteRefs.delete(group.id);

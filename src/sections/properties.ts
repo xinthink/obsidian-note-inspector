@@ -29,7 +29,7 @@ export function renderPropertiesSection(parent: HTMLElement, ctx: SectionContext
       if (entries.length === 0) {
         emptyState(body, t("propertiesEmpty"));
       } else {
-        const list = body.createDiv({ cls: "np-props" });
+        const list = body.createDiv({ cls: "ni-props" });
         for (const [key, value] of entries) {
           renderPropertyRow(list, ctx, [key], key, value, 0);
         }
@@ -47,15 +47,15 @@ function renderPropertyRow(
   value: unknown,
   depth: number,
 ): void {
-  const row = parent.createDiv({ cls: "np-prop" });
+  const row = parent.createDiv({ cls: "ni-prop" });
   row.dataset.depth = String(Math.min(depth, 6));
-  row.style.setProperty("--np-depth", String(Math.min(depth, 6)));
+  row.style.setProperty("--ni-depth", String(Math.min(depth, 6)));
 
-  const keyEl = row.createDiv({ cls: "np-prop-key", text: key });
+  const keyEl = row.createDiv({ cls: "ni-prop-key", text: key });
   keyEl.title = `${t("jumpToSource")} · ${path.join(" › ")}`;
   keyEl.addEventListener("click", () => revealSource(ctx, path));
 
-  const valueEl = row.createDiv({ cls: "np-prop-value" });
+  const valueEl = row.createDiv({ cls: "ni-prop-value" });
   renderValue(valueEl, ctx, path, value, depth);
 
   const actions = actionBar(row);
@@ -119,7 +119,7 @@ function renderValue(
     case "object":
       break;
     default:
-      host.createSpan({ cls: "np-value", text: String(value) });
+      host.createSpan({ cls: "ni-value", text: String(value) });
       return;
   }
   if (Array.isArray(value)) {
@@ -130,7 +130,7 @@ function renderValue(
 }
 
 function renderMissing(host: HTMLElement, ctx: SectionContext, path: string[]): void {
-  const value = host.createSpan({ cls: "np-value np-value-empty", text: "—" });
+  const value = host.createSpan({ cls: "ni-value ni-value-empty", text: "—" });
   value.title = t("clickToEdit");
   value.addEventListener("click", () => startScalarEdit(host, ctx, path, ""));
 }
@@ -141,7 +141,7 @@ function renderBoolean(
   path: string[],
   value: boolean,
 ): void {
-  const label = host.createEl("label", { cls: "np-checkbox" });
+  const label = host.createEl("label", { cls: "ni-checkbox" });
   const input = label.createEl("input", { type: "checkbox" });
   input.checked = value;
   input.addEventListener("change", () => {
@@ -158,7 +158,7 @@ function renderScalar(
   value: number | string,
   text: string,
 ): void {
-  const cls = typeof value === "number" ? "np-value np-number" : "np-value np-string";
+  const cls = typeof value === "number" ? "ni-value ni-number" : "ni-value ni-string";
   const span = host.createSpan({ cls, text });
   span.title = t("clickToEdit");
   span.addEventListener("click", () => startScalarEdit(host, ctx, path, value));
@@ -193,9 +193,9 @@ function renderString(
   path: string[],
   value: string,
 ): void {
-  const wrapper = host.createDiv({ cls: "np-value np-string" });
+  const wrapper = host.createDiv({ cls: "ni-value ni-string" });
   if (value === "") {
-    wrapper.createSpan({ cls: "np-value-empty", text: t("emptyValue") });
+    wrapper.createSpan({ cls: "ni-value-empty", text: t("emptyValue") });
   }
   appendRichText(wrapper, value, ctx);
   if (wrapper.querySelector("a") === null) wrapper.title = t("clickToEdit");
@@ -213,7 +213,7 @@ function renderArray(
   depth: number,
 ): void {
   if (depth >= MAX_DEPTH) {
-    host.createEl("pre", { cls: "np-json", text: JSON.stringify(value, null, 2) });
+    host.createEl("pre", { cls: "ni-json", text: JSON.stringify(value, null, 2) });
     return;
   }
   if (value.every(isPrimitive)) {
@@ -234,29 +234,29 @@ function renderItems(
   value: unknown[],
   depth: number,
 ): void {
-  const list = host.createDiv({ cls: "np-items" });
+  const list = host.createDiv({ cls: "ni-items" });
   value.forEach((item, index) => {
     const itemPath = [...path, String(index)];
     if (!isPlainObject(item)) {
-      const row = list.createDiv({ cls: "np-array-item" });
+      const row = list.createDiv({ cls: "ni-array-item" });
       renderValue(row, ctx, itemPath, item, depth + 1);
       return;
     }
 
     const stateKey = `${ctx.file.path}::${itemPath.join(".")}`;
     const expanded = ctx.view.ui.expandedItems.has(stateKey);
-    const itemEl = list.createDiv({ cls: "np-item" });
+    const itemEl = list.createDiv({ cls: "ni-item" });
     if (expanded) itemEl.addClass("is-expanded");
 
     const toggle = itemEl.createEl("button", {
-      cls: "np-item-toggle",
+      cls: "ni-item-toggle",
       attr: { type: "button" },
     });
     setIcon(
-      toggle.createSpan({ cls: "np-item-chevron" }),
+      toggle.createSpan({ cls: "ni-item-chevron" }),
       expanded ? "chevron-down" : "chevron-right",
     );
-    toggle.createSpan({ cls: "np-item-label", text: itemLabel(item, index) });
+    toggle.createSpan({ cls: "ni-item-label", text: itemLabel(item, index) });
     toggle.title = JSON.stringify(item, null, 2);
     toggle.addEventListener("click", () => {
       if (expanded) ctx.view.ui.expandedItems.delete(stateKey);
@@ -281,7 +281,7 @@ function renderItems(
     });
 
     if (!expanded) return;
-    const body = itemEl.createDiv({ cls: "np-item-body" });
+    const body = itemEl.createDiv({ cls: "ni-item-body" });
     for (const [key, nested] of Object.entries(item)) {
       renderPropertyRow(body, ctx, [...itemPath, key], key, nested, depth + 1);
     }
@@ -299,10 +299,10 @@ function renderAddItem(
   value: unknown[],
 ): void {
   const button = parent.createEl("button", {
-    cls: "np-add-button np-add-item",
+    cls: "ni-add-button ni-add-item",
     attr: { type: "button" },
   });
-  setIcon(button.createSpan({ cls: "np-icon" }), "plus");
+  setIcon(button.createSpan({ cls: "ni-icon" }), "plus");
   button.createSpan({ text: t("addItem") });
   button.addEventListener("click", () => {
     const template = itemTemplate(value);
@@ -366,15 +366,15 @@ function renderChips(
   path: string[],
   value: unknown[],
 ): void {
-  const chips = host.createDiv({ cls: "np-chips" });
+  const chips = host.createDiv({ cls: "ni-chips" });
   value.forEach((item, index) => {
-    const chip = chips.createSpan({ cls: "np-chip" });
-    const textEl = chip.createSpan({ cls: "np-chip-text" });
+    const chip = chips.createSpan({ cls: "ni-chip" });
+    const textEl = chip.createSpan({ cls: "ni-chip-text" });
     renderChipText(textEl, ctx, [...path, String(index)], item);
     iconButton(chip, {
       icon: "x",
       label: t("removeItem"),
-      cls: "np-chip-remove",
+      cls: "ni-chip-remove",
       onClick: () => {
         void applyPathEdit(ctx.app, ctx.file, [...path, String(index)], { op: "delete" }).then(
           () => ctx.refresh(),
@@ -385,7 +385,7 @@ function renderChips(
   iconButton(chips, {
     icon: "plus",
     label: t("addItem"),
-    cls: "np-chip-add",
+    cls: "ni-chip-add",
     onClick: () => {
       void applyPathEdit(ctx.app, ctx.file, path, { op: "set", value: [...value, ""] }).then(
         () => ctx.refresh(),
@@ -418,14 +418,14 @@ function renderObject(
   depth: number,
 ): void {
   if (depth >= MAX_DEPTH) {
-    host.createEl("pre", { cls: "np-json", text: JSON.stringify(value, null, 2) });
+    host.createEl("pre", { cls: "ni-json", text: JSON.stringify(value, null, 2) });
     return;
   }
   const entries = Object.entries(value);
   if (entries.length === 0) {
-    host.createSpan({ cls: "np-value np-value-empty", text: "{}" });
+    host.createSpan({ cls: "ni-value ni-value-empty", text: "{}" });
   } else {
-    const box = host.createDiv({ cls: "np-object" });
+    const box = host.createDiv({ cls: "ni-object" });
     for (const [key, nested] of entries) {
       renderPropertyRow(box, ctx, [...path, key], key, nested, depth + 1);
     }
@@ -441,18 +441,18 @@ function renderAddKey(
   value: Record<string, unknown>,
 ): void {
   const existing = Object.keys(value);
-  const row = parent.createDiv({ cls: "np-add np-add-key" });
+  const row = parent.createDiv({ cls: "ni-add ni-add-key" });
   const showButton = () => {
     row.empty();
     const button = row.createEl("button", {
-      cls: "np-add-button np-add-button-inline",
+      cls: "ni-add-button ni-add-button-inline",
       attr: { type: "button" },
     });
-    setIcon(button.createSpan({ cls: "np-icon" }), "plus");
+    setIcon(button.createSpan({ cls: "ni-icon" }), "plus");
     button.createSpan({ text: t("addKey") });
     button.addEventListener("click", () => {
       row.empty();
-      const host = row.createDiv({ cls: "np-add-row" });
+      const host = row.createDiv({ cls: "ni-add-row" });
       startInlineEdit(host, {
         value: "",
         placeholder: t("keyName"),
@@ -482,25 +482,25 @@ function renderAddKey(
 
 /** New top-level property: pick text / list / dict first, then name it. */
 function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[]): void {
-  const footer = body.createDiv({ cls: "np-add" });
+  const footer = body.createDiv({ cls: "ni-add" });
   const showButton = () => {
     footer.empty();
     const button = footer.createEl("button", {
-      cls: "np-add-button np-add-property",
+      cls: "ni-add-button ni-add-property",
       attr: { type: "button" },
     });
-    setIcon(button.createSpan({ cls: "np-icon" }), "plus");
+    setIcon(button.createSpan({ cls: "ni-icon" }), "plus");
     button.createSpan({ text: t("addProperty") });
     button.addEventListener("click", () => {
       footer.empty();
-      const host = footer.createDiv({ cls: "np-add-row" });
+      const host = footer.createDiv({ cls: "ni-add-row" });
       const types: Array<{ label: string; value: unknown }> = [
         { label: t("typeText"), value: "" },
         { label: t("typeList"), value: [] },
         { label: t("typeDict"), value: {} },
       ];
       let selected = 0;
-      const chips = host.createDiv({ cls: "np-add-types" });
+      const chips = host.createDiv({ cls: "ni-add-types" });
       const chipButtons: HTMLButtonElement[] = [];
       const applySelection = () => {
         chipButtons.forEach((chip, index) =>
@@ -509,7 +509,7 @@ function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[
       };
       types.forEach((type, index) => {
         const chip = chips.createEl("button", {
-          cls: "np-type-chip",
+          cls: "ni-type-chip",
           text: type.label,
           attr: { type: "button" },
         });
@@ -523,7 +523,7 @@ function renderAddProperty(body: HTMLElement, ctx: SectionContext, keys: string[
       });
       applySelection();
 
-      const inputHost = host.createDiv({ cls: "np-add-input" });
+      const inputHost = host.createDiv({ cls: "ni-add-input" });
       startInlineEdit(inputHost, {
         value: "",
         placeholder: t("propertyName"),
@@ -557,7 +557,7 @@ async function copyValue(value: unknown): Promise<void> {
     await navigator.clipboard.writeText(text);
     new Notice(t("copied"));
   } catch {
-    new Notice("Note panel: clipboard unavailable");
+    new Notice("Note inspector: clipboard unavailable");
   }
 }
 

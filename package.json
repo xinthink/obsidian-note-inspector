@@ -1,7 +1,7 @@
 {
-  "name": "obsidian-note-panel",
+  "name": "obsidian-note-inspector",
   "version": "1.0.0",
-  "description": "Obsidian plugin: properties, outline and footnotes of the active note in one collapsible side panel.",
+  "description": "Obsidian plugin: an inspector panel for the active note \u2014 properties, outline and footnotes in one collapsible view.",
   "private": true,
   "type": "module",
   "scripts": {

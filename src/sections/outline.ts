@@ -29,19 +29,19 @@ export function renderOutlineSection(parent: HTMLElement, ctx: SectionContext): 
         emptyState(body, t("outlineEmpty"));
         return;
       }
-      const list = body.createDiv({ cls: "np-outline" });
+      const list = body.createDiv({ cls: "ni-outline" });
       headings.forEach((heading, index) => {
         const line = heading.position.start.line;
-        const item = list.createDiv({ cls: `np-outline-item np-h${heading.level}` });
+        const item = list.createDiv({ cls: `ni-outline-item ni-h${heading.level}` });
         if (index === activeIndex) item.addClass("is-active");
         item.tabIndex = 0;
         item.setAttribute("role", "button");
         item.title = t("jumpToHeading");
 
         if (settings.showHeadingLevels) {
-          item.createSpan({ cls: "np-outline-level", text: `H${heading.level}` });
+          item.createSpan({ cls: "ni-outline-level", text: `H${heading.level}` });
         }
-        item.createSpan({ cls: "np-outline-text", text: heading.heading });
+        item.createSpan({ cls: "ni-outline-text", text: heading.heading });
 
         const go = () =>
           ctx.navigate({ line, ch: heading.position.start.col });

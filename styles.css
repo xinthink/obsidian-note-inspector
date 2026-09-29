@@ -1,12 +1,12 @@
 /* ==========================================================================
-   Note panel — properties / outline / footnotes in one side panel
+   Note inspector — properties / outline / footnotes in one side panel
    ========================================================================== */
 
-.note-panel-view {
+.note-inspector-view {
   padding: 0;
 }
 
-.np-root {
+.ni-root {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -15,7 +15,7 @@
 
 /* ------------------------------------------------------------------ header */
 
-.np-header {
+.ni-header {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -24,12 +24,12 @@
   flex: 0 0 auto;
 }
 
-.np-file {
+.ni-file {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-.np-file-name {
+.ni-file-name {
   font-size: var(--font-ui-small);
   font-weight: var(--font-semibold, 600);
   color: var(--text-normal);
@@ -38,7 +38,7 @@
   text-overflow: ellipsis;
 }
 
-.np-header-actions {
+.ni-header-actions {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -46,11 +46,11 @@
   transition: opacity 100ms ease-in-out;
 }
 
-.np-header-actions:hover {
+.ni-header-actions:hover {
   opacity: 1;
 }
 
-.np-sections {
+.ni-sections {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -61,18 +61,18 @@
 
 /* ---------------------------------------------------------------- sections */
 
-.np-section {
+.ni-section {
   border-bottom: 1px solid var(--background-modifier-border);
   padding-bottom: 6px;
   margin-bottom: 6px;
 }
 
-.np-section:last-child {
+.ni-section:last-child {
   border-bottom: none;
   margin-bottom: 0;
 }
 
-.np-section-header {
+.ni-section-header {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -82,27 +82,27 @@
   user-select: none;
 }
 
-.np-section-header:hover {
+.ni-section-header:hover {
   background-color: var(--background-modifier-hover);
 }
 
-.np-section-header:focus-visible {
+.ni-section-header:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: -2px;
 }
 
-.np-chevron {
+.ni-chevron {
   display: flex;
   align-items: center;
   color: var(--text-muted);
 }
 
-.np-chevron svg {
+.ni-chevron svg {
   width: 14px;
   height: 14px;
 }
 
-.np-section-title {
+.ni-section-title {
   flex: 1 1 auto;
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-semibold, 600);
@@ -111,7 +111,7 @@
   color: var(--text-muted);
 }
 
-.np-section-count {
+.ni-section-count {
   font-size: var(--font-ui-smaller);
   color: var(--text-faint);
   background-color: var(--background-modifier-hover);
@@ -120,7 +120,7 @@
   line-height: 16px;
 }
 
-.np-section-actions {
+.ni-section-actions {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -128,23 +128,23 @@
   transition: opacity 100ms ease-in-out;
 }
 
-.np-section-header:hover .np-section-actions,
-.np-section-actions:focus-within {
+.ni-section-header:hover .ni-section-actions,
+.ni-section-actions:focus-within {
   opacity: 1;
 }
 
 /* Actions that stay visible (dimmed) so they can be discovered without hover. */
-.np-section-actions.is-persistent {
+.ni-section-actions.is-persistent {
   opacity: 0.55;
 }
 
-.np-section-body {
+.ni-section-body {
   padding: 2px 0;
 }
 
 /* ------------------------------------------------------------- icon button */
 
-button.np-icon-button {
+button.ni-icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -161,66 +161,66 @@ button.np-icon-button {
   flex: 0 0 auto;
 }
 
-button.np-icon-button:hover {
+button.ni-icon-button:hover {
   background-color: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.np-icon-button svg {
+.ni-icon-button svg {
   width: 14px;
   height: 14px;
 }
 
 /* -------------------------------------------------------------- properties */
 
-.np-props,
-.np-object {
+.ni-props,
+.ni-object {
   display: flex;
   flex-direction: column;
 }
 
-.np-prop {
+.ni-prop {
   position: relative;
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  padding: 2px 4px 2px calc(3px + var(--np-depth, 0) * 8px);
+  padding: 2px 4px 2px calc(3px + var(--ni-depth, 0) * 8px);
   border-radius: var(--radius-s);
 }
 
-.np-prop:hover {
+.ni-prop:hover {
   background-color: var(--background-modifier-hover);
 }
 
 /* Top level properties line up in two columns… */
-.np-prop[data-depth="0"] > .np-prop-key {
+.ni-prop[data-depth="0"] > .ni-prop-key {
   flex: 0 0 auto;
   width: clamp(46px, 34%, 96px);
 }
 
 /* …while nested values flow inline as `key: value`, so a narrow sidebar can
    never squeeze a value column down to nothing. */
-.np-prop:not([data-depth="0"]) {
+.ni-prop:not([data-depth="0"]) {
   gap: 4px;
   padding-top: 1px;
   padding-bottom: 1px;
 }
 
-.np-prop:not([data-depth="0"]) > .np-prop-key {
+.ni-prop:not([data-depth="0"]) > .ni-prop-key {
   flex: 0 0 auto;
   max-width: 45%;
 }
 
-.np-prop:not([data-depth="0"]) > .np-prop-key::after {
+.ni-prop:not([data-depth="0"]) > .ni-prop-key::after {
   content: ":";
   color: var(--text-faint);
 }
 
-.np-prop:not([data-depth="0"]) > .np-prop-value {
+.ni-prop:not([data-depth="0"]) > .ni-prop-value {
   flex: 1 1 auto;
 }
 
-.np-prop-key {
+.ni-prop-key {
   min-width: 0;
   font-size: var(--font-ui-smaller);
   line-height: 1.5;
@@ -229,12 +229,12 @@ button.np-icon-button:hover {
   cursor: var(--cursor-link, pointer);
 }
 
-.np-prop-key:hover {
+.ni-prop-key:hover {
   color: var(--text-accent);
   text-decoration: underline;
 }
 
-.np-prop-value {
+.ni-prop-value {
   flex: 1 1 auto;
   min-width: 0;
   font-size: var(--font-ui-small);
@@ -242,41 +242,41 @@ button.np-icon-button:hover {
   overflow-wrap: anywhere;
 }
 
-.np-value {
+.ni-value {
   overflow-wrap: anywhere;
 }
 
-.np-number {
+.ni-number {
   font-variant-numeric: tabular-nums;
 }
 
-.np-string {
+.ni-string {
   white-space: pre-wrap;
   cursor: text;
 }
 
-.np-value-empty {
+.ni-value-empty {
   color: var(--text-faint);
   font-style: italic;
 }
 
-.np-checkbox {
+.ni-checkbox {
   display: inline-flex;
   align-items: center;
   cursor: var(--cursor);
 }
 
-.np-link {
+.ni-link {
   color: var(--link-color);
   text-decoration: none;
 }
 
-.np-link:hover {
+.ni-link:hover {
   text-decoration: underline;
 }
 
 /* Hover actions float above the value instead of reserving a column. */
-.np-actions {
+.ni-actions {
   position: absolute;
   top: 1px;
   right: 2px;
@@ -294,14 +294,14 @@ button.np-icon-button:hover {
   transition: opacity 100ms ease-in-out;
 }
 
-.np-prop:hover .np-actions,
-.np-item:hover .np-actions,
-.np-actions:focus-within {
+.ni-prop:hover .ni-actions,
+.ni-item:hover .ni-actions,
+.ni-actions:focus-within {
   opacity: 1;
   pointer-events: auto;
 }
 
-.np-json {
+.ni-json {
   font-family: var(--font-monospace);
   font-size: var(--font-ui-smaller);
   white-space: pre-wrap;
@@ -311,14 +311,14 @@ button.np-icon-button:hover {
 
 /* ------------------------------------------------------------------ chips */
 
-.np-chips {
+.ni-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
 }
 
-.np-chip {
+.ni-chip {
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -331,51 +331,51 @@ button.np-icon-button:hover {
   line-height: 1.6;
 }
 
-.np-chip-text {
+.ni-chip-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: text;
 }
 
-.np-chip-remove {
+.ni-chip-remove {
   width: 16px;
   height: 16px;
   opacity: 0.45;
 }
 
-.np-chip-remove svg {
+.ni-chip-remove svg {
   width: 11px;
   height: 11px;
 }
 
-.np-chip:hover .np-chip-remove {
+.ni-chip:hover .ni-chip-remove {
   opacity: 0.9;
 }
 
-.np-chip-add {
+.ni-chip-add {
   width: 18px;
   height: 18px;
 }
 
 /* -------------------------------------------------- arrays of records */
 
-.np-items {
+.ni-items {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-.np-item {
+.ni-item {
   position: relative;
   border-radius: var(--radius-s);
 }
 
-.np-item:hover {
+.ni-item:hover {
   background-color: var(--background-modifier-hover);
 }
 
-button.np-item-toggle {
+button.ni-item-toggle {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -392,23 +392,23 @@ button.np-item-toggle {
   cursor: var(--cursor);
 }
 
-button.np-item-toggle:hover {
+button.ni-item-toggle:hover {
   background-color: transparent;
 }
 
-.np-item-chevron {
+.ni-item-chevron {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
   color: var(--text-faint);
 }
 
-.np-item-chevron svg {
+.ni-item-chevron svg {
   width: 12px;
   height: 12px;
 }
 
-.np-item-label {
+.ni-item-label {
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -416,25 +416,25 @@ button.np-item-toggle:hover {
   white-space: nowrap;
 }
 
-.np-item.is-expanded .np-item-label {
+.ni-item.is-expanded .ni-item-label {
   white-space: normal;
 }
 
-.np-item-body {
+.ni-item-body {
   padding: 0 0 4px 12px;
 }
 
-.np-array-item {
+.ni-array-item {
   padding-left: 4px;
 }
 
 /* --------------------------------------------------------- add property UI */
 
-.np-add {
+.ni-add {
   padding: 4px 2px 0;
 }
 
-button.np-add-button {
+button.ni-add-button {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -451,36 +451,36 @@ button.np-add-button {
   cursor: var(--cursor);
 }
 
-button.np-add-button:hover {
+button.ni-add-button:hover {
   color: var(--text-normal);
   background-color: var(--background-modifier-hover);
   border-color: var(--interactive-accent);
 }
 
-.np-add-button .np-icon {
+.ni-add-button .ni-icon {
   display: flex;
   align-items: center;
 }
 
-.np-add-button .np-icon svg {
+.ni-add-button .ni-icon svg {
   width: 13px;
   height: 13px;
 }
 
-.np-add-row {
+.ni-add-row {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 1px 2px;
 }
 
-.np-add-types {
+.ni-add-types {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-button.np-type-chip {
+button.ni-type-chip {
   flex: 0 0 auto;
   height: auto;
   padding: 1px 7px;
@@ -494,23 +494,23 @@ button.np-type-chip {
   cursor: var(--cursor);
 }
 
-button.np-type-chip:hover {
+button.ni-type-chip:hover {
   color: var(--text-normal);
   background-color: var(--background-modifier-hover);
 }
 
-button.np-type-chip.is-active {
+button.ni-type-chip.is-active {
   color: var(--text-on-accent);
   background-color: var(--interactive-accent);
   border-color: var(--interactive-accent);
 }
 
 /* `+ Add field` inside a nested object: light, inline, low-key. */
-.np-add-key {
+.ni-add-key {
   padding: 1px 0 0;
 }
 
-.np-add-key > button.np-add-button-inline {
+.ni-add-key > button.ni-add-button-inline {
   display: inline-flex;
   width: auto;
   padding: 1px 6px;
@@ -519,22 +519,22 @@ button.np-type-chip.is-active {
   border: none;
 }
 
-.np-add-key > button.np-add-button-inline:hover {
+.ni-add-key > button.ni-add-button-inline:hover {
   color: var(--text-accent);
   background-color: var(--background-modifier-hover);
   border: none;
 }
 
-.np-add-button-inline .np-icon svg {
+.ni-add-button-inline .ni-icon svg {
   width: 12px;
   height: 12px;
 }
 
-.np-add-item {
+.ni-add-item {
   margin-top: 2px;
 }
 
-.np-edit-input {
+.ni-edit-input {
   width: 100%;
   height: auto;
   min-height: 22px;
@@ -542,7 +542,7 @@ button.np-type-chip.is-active {
   font-size: var(--font-ui-small);
 }
 
-.np-edit-textarea {
+.ni-edit-textarea {
   width: 100%;
   min-height: 46px;
   max-height: 260px;
@@ -553,21 +553,21 @@ button.np-type-chip.is-active {
   resize: vertical;
 }
 
-.np-edit-bar {
+.ni-edit-bar {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 3px;
 }
 
-.np-edit-hint {
+.ni-edit-hint {
   flex: 1 1 auto;
   min-width: 0;
   font-size: var(--font-ui-smaller);
   color: var(--text-faint);
 }
 
-.np-edit-buttons {
+.ni-edit-buttons {
   display: flex;
   gap: 2px;
   flex: 0 0 auto;
@@ -575,12 +575,12 @@ button.np-type-chip.is-active {
 
 /* --------------------------------------------------------------- outline */
 
-.np-outline {
+.ni-outline {
   display: flex;
   flex-direction: column;
 }
 
-.np-outline-item {
+.ni-outline-item {
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -592,94 +592,94 @@ button.np-type-chip.is-active {
   cursor: var(--cursor);
 }
 
-.np-outline-item:hover {
+.ni-outline-item:hover {
   background-color: var(--background-modifier-hover);
 }
 
-.np-outline-item:focus-visible {
+.ni-outline-item:focus-visible {
   outline: 2px solid var(--interactive-accent);
   outline-offset: -2px;
 }
 
-.np-outline-item.is-active {
+.ni-outline-item.is-active {
   color: var(--text-accent);
   background-color: var(--background-modifier-hover);
 }
 
-.np-outline-text {
+.ni-outline-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.np-outline-level {
+.ni-outline-level {
   flex: 0 0 auto;
   font-size: var(--font-ui-smaller);
   font-variant-numeric: tabular-nums;
   color: var(--text-faint);
 }
 
-.np-h1 {
+.ni-h1 {
   padding-left: 4px;
   font-weight: var(--font-semibold, 600);
 }
 
-.np-h2 {
+.ni-h2 {
   padding-left: 16px;
 }
 
-.np-h3 {
+.ni-h3 {
   padding-left: 28px;
 }
 
-.np-h4 {
+.ni-h4 {
   padding-left: 40px;
 }
 
-.np-h5 {
+.ni-h5 {
   padding-left: 52px;
 }
 
-.np-h6 {
+.ni-h6 {
   padding-left: 64px;
   color: var(--text-muted);
 }
 
 /* ------------------------------------------------------------- footnotes */
 
-.np-footnotes {
+.ni-footnotes {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.np-fn {
+.ni-fn {
   border-left: 2px solid var(--background-modifier-border);
   padding: 2px 2px 4px 8px;
 }
 
-.np-fn.is-undefined {
+.ni-fn.is-undefined {
   border-left-color: var(--text-error);
 }
 
-.np-fn.is-unused {
+.ni-fn.is-unused {
   border-left-style: dotted;
   opacity: 0.8;
 }
 
-.np-fn-head {
+.ni-fn-head {
   position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.np-fn:hover .np-actions {
+.ni-fn:hover .ni-actions {
   opacity: 1;
   pointer-events: auto;
 }
 
-.np-fn-index {
+.ni-fn-index {
   flex: 0 0 auto;
   min-width: 18px;
   padding: 0 4px;
@@ -693,7 +693,7 @@ button.np-type-chip.is-active {
   border-radius: 10px;
 }
 
-.np-fn-id {
+.ni-fn-id {
   flex: 1 1 auto;
   min-width: 0;
   font-family: var(--font-monospace);
@@ -705,7 +705,7 @@ button.np-type-chip.is-active {
   cursor: var(--cursor);
 }
 
-.np-fn-meta {
+.ni-fn-meta {
   flex: 0 0 auto;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
@@ -713,7 +713,7 @@ button.np-type-chip.is-active {
 }
 
 /* Reference count doubles as the fold/unfold control of the reference rows. */
-button.np-fn-refs-toggle {
+button.ni-fn-refs-toggle {
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -729,31 +729,31 @@ button.np-fn-refs-toggle {
   cursor: var(--cursor);
 }
 
-button.np-fn-refs-toggle:hover {
+button.ni-fn-refs-toggle:hover {
   color: var(--text-accent);
   background-color: var(--background-modifier-hover);
 }
 
-.np-fn-toggle-chevron {
+.ni-fn-toggle-chevron {
   display: flex;
   align-items: center;
 }
 
-.np-fn-toggle-chevron svg {
+.ni-fn-toggle-chevron svg {
   width: 12px;
   height: 12px;
 }
 
-.np-fn-index:hover,
-.np-fn-id:hover {
+.ni-fn-index:hover,
+.ni-fn-id:hover {
   color: var(--text-accent);
 }
 
-.np-fn.is-undefined .np-fn-meta {
+.ni-fn.is-undefined .ni-fn-meta {
   color: var(--text-error);
 }
 
-.np-fn-def {
+.ni-fn-def {
   padding: 2px 0;
   font-size: var(--font-ui-small);
   color: var(--text-normal);
@@ -762,35 +762,35 @@ button.np-fn-refs-toggle:hover {
   border-radius: var(--radius-s);
 }
 
-.np-fn-def:hover {
+.ni-fn-def:hover {
   background-color: var(--background-modifier-hover);
 }
 
-.np-fn-def.is-missing {
+.ni-fn-def.is-missing {
   color: var(--text-error);
   font-style: italic;
 }
 
-.np-fn-def-text {
+.ni-fn-def-text {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-.np-fn-def-text.is-clamped {
+.ni-fn-def-text.is-clamped {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.np-fn-refs {
+.ni-fn-refs {
   display: flex;
   flex-direction: column;
   gap: 1px;
   margin-top: 2px;
 }
 
-.np-fn-ref {
+.ni-fn-ref {
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -801,25 +801,25 @@ button.np-fn-refs-toggle:hover {
   cursor: var(--cursor);
 }
 
-.np-fn-ref:hover {
+.ni-fn-ref:hover {
   background-color: var(--background-modifier-hover);
   color: var(--text-normal);
 }
 
-.np-fn-ref-line {
+.ni-fn-ref-line {
   flex: 0 0 auto;
   min-width: 28px;
   font-family: var(--font-monospace);
   color: var(--text-faint);
 }
 
-.np-fn-ref-text {
+.ni-fn-ref-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-button.np-more {
+button.ni-more {
   display: flex;
   align-items: center;
   gap: 3px;
@@ -835,24 +835,24 @@ button.np-more {
   cursor: var(--cursor);
 }
 
-button.np-more:hover {
+button.ni-more:hover {
   color: var(--text-accent);
   background-color: transparent;
 }
 
-.np-more-chevron {
+.ni-more-chevron {
   display: flex;
   align-items: center;
 }
 
-.np-more-chevron svg {
+.ni-more-chevron svg {
   width: 12px;
   height: 12px;
 }
 
 /* ------------------------------------------------------------- empty state */
 
-.np-empty {
+.ni-empty {
   padding: 2px 4px 6px;
   font-size: var(--font-ui-smaller);
   font-style: italic;

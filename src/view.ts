@@ -6,14 +6,14 @@ import {
   type WorkspaceLeaf,
 } from "obsidian";
 import { t } from "./i18n";
-import type NotePanelPlugin from "./main";
+import type NoteInspectorPlugin from "./main";
 import { renderFootnotesSection } from "./sections/footnotes";
 import { renderOutlineSection } from "./sections/outline";
 import { renderPropertiesSection } from "./sections/properties";
 import { SECTION_IDS, type LineRange, type PanelUiState, type SectionContext } from "./types";
 import { emptyState, iconButton } from "./util/dom";
 
-export const NOTE_PANEL_VIEW_TYPE = "note-panel";
+export const VIEW_TYPE_NOTE_INSPECTOR = "note-inspector";
 
 /**
  * One side panel that stacks the three core "note structure" views: the
@@ -21,8 +21,8 @@ export const NOTE_PANEL_VIEW_TYPE = "note-panel";
  * currently in focus. Every section folds away on its own and the fold state is
  * persisted, so the panel can be trimmed down to just what you need.
  */
-export class NotePanelView extends ItemView {
-  readonly plugin: NotePanelPlugin;
+export class NoteInspectorView extends ItemView {
+  readonly plugin: NoteInspectorPlugin;
 
   /** Non-persisted UI state that has to survive re-renders. */
   readonly ui: PanelUiState = {
@@ -45,7 +45,7 @@ export class NotePanelView extends ItemView {
   private cacheEpoch = 0;
   private readonly scheduleRender: () => void;
 
-  constructor(leaf: WorkspaceLeaf, plugin: NotePanelPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: NoteInspectorPlugin) {
     super(leaf);
     this.plugin = plugin;
     this.navigation = false;
@@ -53,7 +53,7 @@ export class NotePanelView extends ItemView {
   }
 
   getViewType(): string {
-    return NOTE_PANEL_VIEW_TYPE;
+    return VIEW_TYPE_NOTE_INSPECTOR;
   }
 
   getDisplayText(): string {
@@ -61,14 +61,14 @@ export class NotePanelView extends ItemView {
   }
 
   getIcon(): string {
-    return "panel-right";
+    return "list-tree";
   }
 
   async onOpen(): Promise<void> {
-    this.contentEl.addClass("note-panel-view");
-    const root = this.contentEl.createDiv({ cls: "np-root" });
-    this.headerEl = root.createDiv({ cls: "np-header" });
-    this.sectionsEl = root.createDiv({ cls: "np-sections" });
+    this.contentEl.addClass("note-inspector-view");
+    const root = this.contentEl.createDiv({ cls: "ni-root" });
+    this.headerEl = root.createDiv({ cls: "ni-header" });
+    this.sectionsEl = root.createDiv({ cls: "ni-sections" });
 
     this.registerEvent(
       this.app.workspace.on("active-leaf-change", () => this.scheduleRender()),
@@ -160,7 +160,7 @@ export class NotePanelView extends ItemView {
   /** True while an inline editor is open anywhere in the panel. */
   private hasOpenEditor(): boolean {
     return (
-      this.sectionsEl?.querySelector(".np-edit-input, .np-edit-textarea") !== null
+      this.sectionsEl?.querySelector(".ni-edit-input, .ni-edit-textarea") !== null
     );
   }
 
@@ -277,14 +277,14 @@ export class NotePanelView extends ItemView {
 
   private renderHeader(file: TFile | null): void {
     this.headerEl.empty();
-    const info = this.headerEl.createDiv({ cls: "np-file" });
+    const info = this.headerEl.createDiv({ cls: "ni-file" });
     info.createDiv({
-      cls: "np-file-name",
+      cls: "ni-file-name",
       text: file ? file.basename : t("noActiveNote"),
     });
     if (file) info.title = file.path;
 
-    const actions = this.headerEl.createDiv({ cls: "np-header-actions" });
+    const actions = this.headerEl.createDiv({ cls: "ni-header-actions" });
     const allCollapsed = SECTION_IDS.every((id) => this.plugin.settings.collapsed[id]);
     iconButton(actions, {
       icon: allCollapsed ? "chevrons-up-down" : "chevrons-down-up",

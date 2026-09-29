@@ -2,7 +2,7 @@ import { setIcon } from "obsidian";
 
 /** Placeholder block used when a section has nothing to show. */
 export function emptyState(parent: HTMLElement, text: string): HTMLElement {
-  return parent.createDiv({ cls: "np-empty", text });
+  return parent.createDiv({ cls: "ni-empty", text });
 }
 
 export interface IconButtonOptions {
@@ -17,7 +17,7 @@ export function iconButton(
   options: IconButtonOptions,
 ): HTMLButtonElement {
   const button = parent.createEl("button", {
-    cls: `np-icon-button ${options.cls ?? ""}`.trim(),
+    cls: `ni-icon-button ${options.cls ?? ""}`.trim(),
     attr: { type: "button", "aria-label": options.label, title: options.label },
   });
   setIcon(button, options.icon);
@@ -53,7 +53,7 @@ export function startInlineEdit(
   host.empty();
   host.addClass("is-editing");
   const input = host.createEl("input", {
-    cls: "np-edit-input",
+    cls: "ni-edit-input",
     type: options.inputType ?? "text",
     attr: { spellcheck: "false" },
   });
@@ -113,14 +113,14 @@ export function startTextareaEdit(host: HTMLElement, options: TextareaEditOption
   host.empty();
   host.addClass("is-editing");
 
-  const textarea = host.createEl("textarea", { cls: "np-edit-textarea" });
+  const textarea = host.createEl("textarea", { cls: "ni-edit-textarea" });
   textarea.value = options.value;
   textarea.rows = Math.min(10, Math.max(2, options.value.split("\n").length + 1));
   if (options.placeholder) textarea.placeholder = options.placeholder;
 
-  const bar = host.createDiv({ cls: "np-edit-bar" });
-  if (options.hint) bar.createSpan({ cls: "np-edit-hint", text: options.hint });
-  const buttons = bar.createDiv({ cls: "np-edit-buttons" });
+  const bar = host.createDiv({ cls: "ni-edit-bar" });
+  if (options.hint) bar.createSpan({ cls: "ni-edit-hint", text: options.hint });
+  const buttons = bar.createDiv({ cls: "ni-edit-buttons" });
   iconButton(buttons, {
     icon: "x",
     label: options.cancelLabel,
@@ -170,7 +170,7 @@ export function startTextareaEdit(host: HTMLElement, options: TextareaEditOption
 
 /** A hover-revealed action bar attached to a row. */
 export function actionBar(parent: HTMLElement): HTMLElement {
-  return parent.createDiv({ cls: "np-actions" });
+  return parent.createDiv({ cls: "ni-actions" });
 }
 
 export function truncate(text: string, max: number): string {

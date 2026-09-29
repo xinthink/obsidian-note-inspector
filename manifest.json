@@ -1,9 +1,9 @@
 {
-  "id": "note-panel",
-  "name": "Note Panel",
+  "id": "note-inspector",
+  "name": "Note Inspector",
   "version": "1.0.0",
   "minAppVersion": "1.5.0",
-  "description": "Properties, outline and footnotes of the active note in a single collapsible side panel, so you stop switching between three core views.",
+  "description": "Inspector panel for the active note: frontmatter properties, heading outline and footnotes in one collapsible sidebar view.",
   "author": "xinthink",
   "authorUrl": "https://github.com/xinthink",
   "isDesktopOnly": false
