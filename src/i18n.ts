@@ -1,9 +1,8 @@
 import { moment } from "obsidian";
-import type { PanelLanguage } from "./types";
 
 /**
- * Tiny two-language string table. The panel follows the Obsidian UI language
- * (`auto`) unless the user pins one in the settings tab.
+ * Tiny two-language string table. The panel always follows the Obsidian UI
+ * language; there is no separate language setting.
  */
 const en = {
   panelName: "Note inspector",
@@ -58,11 +57,6 @@ const en = {
   showLess: "Show less",
 
   settings: {
-    language: "Panel language",
-    languageDesc: "Language of the panel labels. Choose “Same as app” to follow Obsidian.",
-    languageAuto: "Same as app",
-    languageEn: "English",
-    languageZh: "简体中文",
     showCounts: "Show item counts",
     showCountsDesc: "Display how many properties, headings or footnotes a section holds.",
     outlineMaxLevel: "Outline depth",
@@ -138,11 +132,6 @@ const zh: Dict = {
   showLess: "收起",
 
   settings: {
-    language: "面板语言",
-    languageDesc: "面板界面文字使用的语言。选择「跟随应用」即与 Obsidian 界面保持一致。",
-    languageAuto: "跟随应用",
-    languageEn: "English",
-    languageZh: "简体中文",
     showCounts: "显示条目数量",
     showCountsDesc: "在各分区标题旁显示属性 / 标题 / 脚注的数量。",
     outlineMaxLevel: "大纲深度",
@@ -166,12 +155,8 @@ const TABLES: Record<"en" | "zh", Dict> = { en, zh };
 
 let activeLocale: "en" | "zh" = "en";
 
-/** Called once on load and whenever the language setting changes. */
-export function setLocale(preference: PanelLanguage): void {
-  if (preference === "en" || preference === "zh") {
-    activeLocale = preference;
-    return;
-  }
+/** Resolve the string table from the Obsidian UI language. */
+export function setLocale(): void {
   activeLocale = detectAppLocale().startsWith("zh") ? "zh" : "en";
 }
 

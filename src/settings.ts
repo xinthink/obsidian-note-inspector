@@ -1,7 +1,7 @@
 import { PluginSettingTab, Setting, type App } from "obsidian";
 import { t } from "./i18n";
 import type NoteInspectorPlugin from "./main";
-import { cloneDefaultSettings, type PanelLanguage } from "./types";
+import { cloneDefaultSettings } from "./types";
 
 export class NoteInspectorSettingTab extends PluginSettingTab {
   private readonly plugin: NoteInspectorPlugin;
@@ -11,38 +11,10 @@ export class NoteInspectorSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
-  /** Apply a language choice once, whichever way the control reports it. */
-  private setLanguage(value: PanelLanguage): void {
-    if (this.plugin.settings.language === value) return;
-    this.plugin.settings.language = value;
-    this.plugin.applyLanguage();
-    this.plugin.refreshViews();
-    void this.plugin.saveSettings();
-    // Rebuild the tab after the control has finished dispatching its event.
-    window.setTimeout(() => this.display(), 0);
-  }
-
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass("note-inspector-settings");
-
-    new Setting(containerEl)
-      .setName(t("settings.language"))
-      .setDesc(t("settings.languageDesc"))
-      .addDropdown((dropdown) => {
-        dropdown
-          .addOption("auto", t("settings.languageAuto"))
-          .addOption("en", t("settings.languageEn"))
-          .addOption("zh", t("settings.languageZh"))
-          .setValue(this.plugin.settings.language)
-          .onChange((value) => this.setLanguage(value as PanelLanguage));
-        // Belt and braces: apply the change even if the component's own
-        // callback is bypassed.
-        dropdown.selectEl?.addEventListener("change", () =>
-          this.setLanguage(dropdown.getValue() as PanelLanguage),
-        );
-      });
 
     new Setting(containerEl)
       .setName(t("settings.showCounts"))
@@ -129,7 +101,6 @@ export class NoteInspectorSettingTab extends PluginSettingTab {
         button.setButtonText(t("settings.resetButton")).onClick(async () => {
           this.plugin.settings = cloneDefaultSettings();
           await this.plugin.saveSettings();
-          this.plugin.applyLanguage();
           this.plugin.refreshViews();
           this.display();
         }),

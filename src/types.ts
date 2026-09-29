@@ -24,10 +24,7 @@ export interface NoteInspectorSettings {
   footnoteRefLimit: number;
   /** Footnote ids whose reference rows were folded away (remembered). */
   foldedFootnoteRefs: string[];
-  language: PanelLanguage;
 }
-
-export type PanelLanguage = "auto" | "en" | "zh";
 
 export const DEFAULT_SETTINGS: NoteInspectorSettings = {
   collapsed: {
@@ -42,7 +39,6 @@ export const DEFAULT_SETTINGS: NoteInspectorSettings = {
   showFootnoteContext: true,
   footnoteRefLimit: 8,
   foldedFootnoteRefs: [],
-  language: "auto",
 };
 
 /** Fresh copy of the defaults, safe to mutate. */

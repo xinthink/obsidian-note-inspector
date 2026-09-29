@@ -92,7 +92,6 @@ obsidian dev:errors
 
 | 设置 | 默认 | 说明 |
 |---|---|---|
-| Panel language | Same as app | 面板文案语言：跟随 Obsidian / English / 简体中文 |
 | Show item counts | 开 | 分区标题旁显示条目数量 |
 | Outline depth | 6 | 大纲显示到第几级标题（H1–H6） |
 | Show heading level badges | 关 | 大纲条目前显示 H1–H6 标签 |
@@ -101,9 +100,7 @@ obsidian dev:errors
 | References shown per footnote | 8 | 超过该数量的引用折叠到「Show more」之后 |
 | Reset panel state | — | 恢复默认折叠状态与全部设置 |
 
-三个分区的折叠状态不在设置页里手动配，它们随点击实时记忆并写回 `data.json`。
-
-**关于「面板语言」**：`跟随应用` 按 Obsidian 的界面语言判定（`zh`、`zh-cn`、`zh-Hans` 都算中文，其余按英文）。切换后**面板内容、侧栏标签页标题、视图标题、ribbon 提示、命令面板里的命令名、设置页自身文案**会一起切过去 —— 后面这几处是 Obsidian 在插件加载时"抄走"的，插件会主动重新标注。
+面板文案**跟随 Obsidian 的界面语言**（中文界面显示中文，其余显示英文），没有单独的语言选项。三个分区的折叠状态不在设置页里手动配，它们随点击实时记忆并写回 `data.json`。
 
 ## 说明与边界
 

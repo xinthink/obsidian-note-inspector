@@ -136,7 +136,7 @@ export class NoteInspectorView extends ItemView {
    */
   async render(force = false): Promise<void> {
     if (!this.sectionsEl) return;
-    setLocale(this.plugin.settings.language);
+    setLocale();
     const seq = ++this.renderSeq;
     const file = this.resolveFile();
     const content = file ? await this.readContent(file) : "";
