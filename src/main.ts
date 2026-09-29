@@ -69,7 +69,7 @@ export default class NotePanelPlugin extends Plugin {
   refreshViews(): void {
     for (const leaf of this.app.workspace.getLeavesOfType(NOTE_PANEL_VIEW_TYPE)) {
       const view = leaf.view;
-      if (view instanceof NotePanelView) void view.render();
+      if (view instanceof NotePanelView) void view.render(true);
     }
   }
 }

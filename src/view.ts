@@ -10,7 +10,7 @@ import type NotePanelPlugin from "./main";
 import { renderFootnotesSection } from "./sections/footnotes";
 import { renderOutlineSection } from "./sections/outline";
 import { renderPropertiesSection } from "./sections/properties";
-import { SECTION_IDS, type PanelUiState, type SectionContext } from "./types";
+import { SECTION_IDS, type LineRange, type PanelUiState, type SectionContext } from "./types";
 import { emptyState, iconButton } from "./util/dom";
 
 export const NOTE_PANEL_VIEW_TYPE = "note-panel";
@@ -36,6 +36,10 @@ export class NotePanelView extends ItemView {
   private sectionsEl!: HTMLElement;
   private currentFile: TFile | null = null;
   private renderSeq = 0;
+  /** Identity of the last rendered content, used to skip pointless rebuilds. */
+  private lastRenderKey: string | null = null;
+  /** Bumped whenever the metadata cache changes, to force a rebuild. */
+  private cacheEpoch = 0;
   private readonly scheduleRender: () => void;
 
   constructor(leaf: WorkspaceLeaf, plugin: NotePanelPlugin) {
@@ -70,7 +74,10 @@ export class NotePanelView extends ItemView {
     this.registerEvent(this.app.workspace.on("editor-change", () => this.scheduleRender()));
     this.registerEvent(
       this.app.metadataCache.on("changed", (file) => {
-        if (!this.currentFile || file.path === this.currentFile.path) this.scheduleRender();
+        if (!this.currentFile || file.path === this.currentFile.path) {
+          this.cacheEpoch++;
+          this.scheduleRender();
+        }
       }),
     );
     this.registerEvent(
@@ -93,13 +100,24 @@ export class NotePanelView extends ItemView {
     await this.render();
   }
 
-  /** Rebuild the whole panel for the note that currently has focus. */
-  async render(): Promise<void> {
+  /**
+   * Rebuild the whole panel for the note that currently has focus. Renders are
+   * skipped when the note, its text and its cached metadata are unchanged, so
+   * incidental events (focus moving to the panel, for instance) never destroy
+   * an inline editor that is being typed into.
+   */
+  async render(force = false): Promise<void> {
     if (!this.sectionsEl) return;
     const seq = ++this.renderSeq;
     const file = this.resolveFile();
     const content = file ? await this.readContent(file) : "";
     if (seq !== this.renderSeq || !this.sectionsEl) return;
+
+    const key = file
+      ? `${file.path}\u0000${this.cacheEpoch}\u0000${content.length}:${hashString(content)}`
+      : "none";
+    if (!force && key === this.lastRenderKey) return;
+    this.lastRenderKey = key;
 
     const scrollTop = this.sectionsEl.scrollTop;
     this.renderHeader(file);
@@ -119,7 +137,8 @@ export class NotePanelView extends ItemView {
       content,
       lines: content.split("\n"),
       cache: this.app.metadataCache.getFileCache(file),
-      navigate: (line, ch = 0) => void this.navigateToLine(file, line, ch),
+      navigate: (target) => void this.navigateToRange(file, target),
+      editLines: (start, end, text) => this.editLines(file, start, end, text),
       scheduleRender: () => this.scheduleRender(),
     };
 
@@ -139,24 +158,66 @@ export class NotePanelView extends ItemView {
     return view.editor.getCursor().line;
   }
 
-  /** Scroll a line of `file` into view, opening the note when needed. */
-  async navigateToLine(file: TFile, line: number, ch = 0): Promise<void> {
+  /** Reveal a line — or select a range — of `file`, opening the note if needed. */
+  async navigateToRange(file: TFile, target: LineRange): Promise<void> {
+    const ch = target.ch ?? 0;
     const existing = this.findLeafFor(file);
     if (!existing) {
       const leaf = this.app.workspace.getLeaf(false);
-      await leaf.openFile(file, { eState: { line, ch } });
+      await leaf.openFile(file, { eState: { line: target.line, ch } });
       return;
     }
     await this.app.workspace.revealLeaf(existing);
     const view = existing.view;
     if (!(view instanceof MarkdownView)) return;
     if (view.getMode() === "source") {
-      view.editor.setCursor({ line, ch });
-      view.editor.scrollIntoView({ from: { line, ch }, to: { line, ch } }, true);
-      view.editor.focus();
+      const editor = view.editor;
+      const from = { line: target.line, ch };
+      if (target.endLine === undefined) {
+        editor.setCursor(from);
+        editor.scrollIntoView({ from, to: from }, true);
+      } else {
+        const to = { line: target.endLine, ch: target.endCh ?? 0 };
+        editor.setSelection(from, to);
+        editor.scrollIntoView({ from, to }, true);
+      }
+      editor.focus();
     } else {
-      view.setEphemeralState({ line, ch });
+      view.setEphemeralState({ line: target.line, ch });
     }
+  }
+
+  /**
+   * Replace the inclusive line range [start, end] of `file`. When the note is
+   * open in an editor the buffer is edited in place, so Ctrl+Z undoes it; an
+   * empty `text` deletes the lines.
+   */
+  editLines(file: TFile, start: number, end: number, text: string): void {
+    const leaf = this.findLeafFor(file);
+    const view = leaf?.view;
+    const inserted = text === "" ? [] : text.split("\n");
+    if (view instanceof MarkdownView && view.getMode() === "source") {
+      const editor = view.editor;
+      const last = editor.lastLine();
+      const from = { line: Math.max(0, Math.min(start, last)), ch: 0 };
+      const toLine = Math.max(from.line, Math.min(end, last));
+      if (inserted.length === 0 && toLine < last) {
+        // Deleting whole lines: swallow the trailing newline as well, so no
+        // empty line is left behind.
+        editor.replaceRange("", from, { line: toLine + 1, ch: 0 });
+        return;
+      }
+      const to = { line: toLine, ch: editor.getLine(toLine).length };
+      editor.replaceRange(inserted.join("\n"), from, to);
+      return;
+    }
+    void this.app.vault.process(file, (data) => {
+      const lines = data.split("\n");
+      if (start < 0 || start >= lines.length) return data;
+      const toLine = Math.min(end, lines.length - 1);
+      lines.splice(start, toLine - start + 1, ...inserted);
+      return lines.join("\n");
+    });
   }
 
   private findLeafFor(file: TFile): WorkspaceLeaf | null {
@@ -219,13 +280,23 @@ export class NotePanelView extends ItemView {
     iconButton(actions, {
       icon: "refresh-cw",
       label: t("refresh"),
-      onClick: () => void this.render(),
+      onClick: () => void this.render(true),
     });
   }
 
   private setAllCollapsed(collapsed: boolean): void {
     for (const id of SECTION_IDS) this.plugin.settings.collapsed[id] = collapsed;
     void this.plugin.saveSettings();
-    void this.render();
+    void this.render(true);
   }
+}
+
+/** FNV-1a over the note text: cheap identity check for the render key. */
+function hashString(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i++) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }

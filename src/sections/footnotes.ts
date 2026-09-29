@@ -1,8 +1,8 @@
-import { setIcon, type FootnoteCache, type FootnoteRefCache } from "obsidian";
+import { Platform, setIcon, type FootnoteCache, type FootnoteRefCache } from "obsidian";
 import { createCollapsibleSection } from "../components/collapsible";
 import { t } from "../i18n";
 import type { SectionContext } from "../types";
-import { emptyState, truncate } from "../util/dom";
+import { actionBar, emptyState, iconButton, startTextareaEdit, truncate } from "../util/dom";
 import { appendRichText, plainText } from "../util/rich-text";
 
 interface FootnoteGroup {
@@ -36,10 +36,14 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
 }
 
 function collectGroups(ctx: SectionContext): FootnoteGroup[] {
-  const refs = [...(ctx.cache?.footnoteRefs ?? [])].sort(
+  const defs = [...(ctx.cache?.footnotes ?? [])].sort(
     (a, b) => a.position.start.line - b.position.start.line,
   );
-  const defs = [...(ctx.cache?.footnotes ?? [])].sort(
+  const defined = new Set(defs.map((def) => def.id));
+
+  // Obsidian's cache only lists references that resolve to a definition, so
+  // dangling references have to be found by scanning the note text.
+  const refs = [...(ctx.cache?.footnoteRefs ?? []), ...scanDanglingRefs(ctx, defined)].sort(
     (a, b) => a.position.start.line - b.position.start.line,
   );
 
@@ -53,7 +57,13 @@ function collectGroups(ctx: SectionContext): FootnoteGroup[] {
     return group;
   };
 
-  for (const ref of refs) ensure(ref.id).references.push(ref);
+  const seen = new Set<string>();
+  for (const ref of refs) {
+    const key = `${ref.id}@${ref.position.start.line}:${ref.position.start.col}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ensure(ref.id).references.push(ref);
+  }
   for (const def of defs) ensure(def.id).definition = def;
 
   const ordered = [...groups.values()].sort((a, b) => orderKey(a) - orderKey(b));
@@ -62,6 +72,40 @@ function collectGroups(ctx: SectionContext): FootnoteGroup[] {
     if (group.references.length > 0) group.index = ++counter;
   }
   return ordered;
+}
+
+/** `[^id]` occurrences whose id has no definition, ignoring fenced code. */
+function scanDanglingRefs(ctx: SectionContext, defined: Set<string>): FootnoteRefCache[] {
+  const found: FootnoteRefCache[] = [];
+  let fence: string | null = null;
+  ctx.lines.forEach((line, index) => {
+    const fenceMatch = /^\s*(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      if (fence === null) fence = marker;
+      else if (marker === fence) fence = null;
+      return;
+    }
+    if (fence !== null) return;
+
+    const pattern = /\[\^([^\]\s]+)\]/g;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(line)) !== null) {
+      const id = match[1];
+      if (defined.has(id)) continue;
+      const rest = line.slice(match.index + match[0].length);
+      if (rest.startsWith(":")) continue; // the definition marker itself
+      const col = match.index;
+      found.push({
+        id,
+        position: {
+          start: { line: index, col, offset: 0 },
+          end: { line: index, col: col + match[0].length, offset: 0 },
+        },
+      });
+    }
+  });
+  return found;
 }
 
 function orderKey(group: FootnoteGroup): number {
@@ -95,12 +139,13 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
     );
   }
 
-  renderDefinition(card, ctx, group);
+  renderDefinition(card, head, ctx, group);
   if (ctx.plugin.settings.showFootnoteContext) renderReferences(card, ctx, group);
 }
 
 function renderDefinition(
   parent: HTMLElement,
+  head: HTMLElement,
   ctx: SectionContext,
   group: FootnoteGroup,
 ): void {
@@ -108,37 +153,103 @@ function renderDefinition(
   if (!group.definition) {
     host.addClass("is-missing");
     host.createSpan({ text: t("footnoteMissing") });
+    const actions = actionBar(head);
+    iconButton(actions, {
+      icon: "plus",
+      label: t("addDefinition"),
+      onClick: () => startDefinitionEdit(host, ctx, group, "", null),
+    });
     return;
   }
   const definition = group.definition;
-  const text = readDefinition(ctx, definition);
+  const span = definitionSpan(ctx, definition);
+  const text = definitionText(ctx, span);
   const expanded = ctx.view.ui.expandedFootnoteDefs.has(group.id);
   const clampable = text.length > 180 || text.includes("\n");
 
   const textEl = host.createDiv({ cls: "np-fn-def-text" });
   if (clampable && !expanded) textEl.addClass("is-clamped");
   appendRichText(textEl, text, ctx);
-  host.title = t("goToDefinition");
+  host.title = t("selectInNote");
   host.addEventListener("click", (event) => {
     const target = event.target as HTMLElement;
     if (target.closest("button") || target.closest("a")) return;
-    ctx.navigate(definition.position.start.line, definition.position.start.col);
+    ctx.navigate({
+      line: span.start,
+      ch: 0,
+      endLine: span.end,
+      endCh: (ctx.lines[span.end] ?? "").length,
+    });
   });
 
-  if (!clampable) return;
-  const toggle = host.createEl("button", {
-    cls: "np-more",
-    attr: { type: "button" },
+  if (clampable) {
+    const toggle = host.createEl("button", {
+      cls: "np-more",
+      attr: { type: "button" },
+    });
+    toggle.createSpan({ text: expanded ? t("showLess") : t("showMore") });
+    const chevron = toggle.createSpan({ cls: "np-more-chevron" });
+    setIcon(chevron, expanded ? "chevron-up" : "chevron-down");
+    toggle.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (expanded) ctx.view.ui.expandedFootnoteDefs.delete(group.id);
+      else ctx.view.ui.expandedFootnoteDefs.add(group.id);
+      ctx.scheduleRender();
+    });
+  }
+
+  const actions = actionBar(head);
+  iconButton(actions, {
+    icon: "pencil",
+    label: t("editDefinition"),
+    onClick: () => startDefinitionEdit(host, ctx, group, text, span),
   });
-  toggle.createSpan({ text: expanded ? t("showLess") : t("showMore") });
-  const chevron = toggle.createSpan({ cls: "np-more-chevron" });
-  setIcon(chevron, expanded ? "chevron-up" : "chevron-down");
-  toggle.addEventListener("click", (event) => {
-    event.stopPropagation();
-    if (expanded) ctx.view.ui.expandedFootnoteDefs.delete(group.id);
-    else ctx.view.ui.expandedFootnoteDefs.add(group.id);
-    ctx.scheduleRender();
+}
+
+/** Edit the definition text in place; an empty result deletes the definition. */
+function startDefinitionEdit(
+  host: HTMLElement,
+  ctx: SectionContext,
+  group: FootnoteGroup,
+  current: string,
+  span: LineSpan | null,
+): void {
+  startTextareaEdit(host, {
+    value: current,
+    placeholder: t("definitionPlaceholder"),
+    hint: t("saveHint", { modifier: Platform.isMacOS ? "⌘" : "Ctrl" }),
+    saveLabel: t("save"),
+    cancelLabel: t("cancel"),
+    onCommit: (next) => {
+      const definition = group.definition;
+      const normalized = next.replace(/\r\n?/g, "\n").trim();
+      if (definition && normalized === current.trim()) {
+        ctx.scheduleRender();
+        return;
+      }
+      const serialized = serializeDefinition(group.id, normalized);
+      if (!span) {
+        // No definition yet: append one at the end of the note.
+        const lastIndex = Math.max(0, ctx.lines.length - 1);
+        const tail = ctx.lines[lastIndex] ?? "";
+        const separator = tail.trim() === "" ? "\n" : "\n\n";
+        ctx.editLines(lastIndex, lastIndex, `${tail}${separator}${serialized}`);
+      } else {
+        ctx.editLines(span.start, span.end, serialized);
+      }
+      ctx.scheduleRender();
+    },
+    onCancel: () => ctx.scheduleRender(),
   });
+}
+
+/** `[^id]: first line` plus two-space continuations, or "" to delete. */
+function serializeDefinition(id: string, text: string): string {
+  if (text === "") return "";
+  const lines = text.split("\n");
+  return [`[^${id}]: ${lines[0]}`, ...lines.slice(1).map((line) => `  ${line}`)]
+    .join("\n")
+    .replace(/\s+$/, "");
 }
 
 function renderReferences(
@@ -155,10 +266,17 @@ function renderReferences(
   for (const ref of visible) {
     const line = ref.position.start.line;
     const row = host.createDiv({ cls: "np-fn-ref" });
-    row.title = t("goToReference");
+    row.title = t("selectInNote");
     row.createSpan({ cls: "np-fn-ref-line", text: `L${line + 1}` });
     row.createSpan({ cls: "np-fn-ref-text", text: lineContext(ctx, line, group.id) });
-    row.addEventListener("click", () => ctx.navigate(line, ref.position.start.col));
+    row.addEventListener("click", () =>
+      ctx.navigate({
+        line,
+        ch: ref.position.start.col,
+        endLine: ref.position.end.line,
+        endCh: ref.position.end.col,
+      }),
+    );
   }
 
   if (group.references.length <= limit) return;
@@ -177,29 +295,55 @@ function renderReferences(
   });
 }
 
-function readDefinition(ctx: SectionContext, definition: FootnoteCache): string {
-  const marker = new RegExp(`^\\s*\\[\\^${escapeRegExp(definition.id)}\\]:\\s?`);
-  const start = definition.position.start.line;
-  const end = definition.position.end.line;
-  const slice = ctx.lines.slice(start, end + 1);
-  if (slice.length > 0 && marker.test(slice[0])) {
-    return deindent([slice[0].replace(marker, ""), ...slice.slice(1)]).trim();
+/** Inclusive line span of a footnote definition. */
+interface LineSpan {
+  start: number;
+  end: number;
+}
+
+/**
+ * Real span of a definition in the current text. The metadata cache can be
+ * stale while typing and may not cover indented continuation lines, so the end
+ * is re-derived from the buffer.
+ */
+function definitionSpan(ctx: SectionContext, definition: FootnoteCache): LineSpan {
+  const marker = new RegExp(`^\\s*\\[\\^${escapeRegExp(definition.id)}\\]:`);
+  const cachedStart = definition.position.start.line;
+  const start =
+    ctx.lines[cachedStart] !== undefined && marker.test(ctx.lines[cachedStart])
+      ? cachedStart
+      : ctx.lines.findIndex((line) => marker.test(line));
+  if (start < 0) {
+    return { start: cachedStart, end: definition.position.end.line };
   }
-  // Cache and buffer drifted (typing): fall back to a line scan.
-  const found = ctx.lines.findIndex((line) => marker.test(line));
-  if (found < 0) return "";
-  const collected: string[] = [ctx.lines[found].replace(marker, "")];
-  for (let i = found + 1; i < ctx.lines.length; i++) {
+  return { start, end: Math.max(definition.position.end.line, continuationEnd(ctx, start)) };
+}
+
+/** Last line belonging to the definition that starts at `start`. */
+function continuationEnd(ctx: SectionContext, start: number): number {
+  let end = start;
+  for (let i = start + 1; i < ctx.lines.length; i++) {
     const line = ctx.lines[i];
     if (/^\s*\[\^[^\]]+\]:/.test(line)) break;
     if (line.trim() === "") {
-      collected.push("");
-      continue;
+      const next = ctx.lines[i + 1];
+      if (next !== undefined && /^\s+\S/.test(next)) {
+        end = i;
+        continue;
+      }
+      break;
     }
-    if (/^\S/.test(line)) break;
-    collected.push(line);
+    if (!/^\s+\S/.test(line)) break;
+    end = i;
   }
-  return deindent(collected).trim();
+  return end;
+}
+
+function definitionText(ctx: SectionContext, span: LineSpan): string {
+  const slice = ctx.lines.slice(span.start, span.end + 1);
+  if (slice.length === 0) return "";
+  const first = slice[0].replace(/^\s*\[\^[^\]]+\]:\s?/, "");
+  return deindent([first, ...slice.slice(1)]).trim();
 }
 
 function deindent(lines: string[]): string {

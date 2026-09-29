@@ -43,7 +43,8 @@ export function renderOutlineSection(parent: HTMLElement, ctx: SectionContext): 
         }
         item.createSpan({ cls: "np-outline-text", text: heading.heading });
 
-        const go = () => ctx.navigate(line, heading.position.start.col);
+        const go = () =>
+          ctx.navigate({ line, ch: heading.position.start.col });
         item.addEventListener("click", go);
         item.addEventListener("keydown", (event) => {
           if (event.key === "Enter" || event.key === " ") {

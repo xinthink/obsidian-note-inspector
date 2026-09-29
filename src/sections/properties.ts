@@ -286,6 +286,65 @@ function renderItems(
       renderPropertyRow(body, ctx, [...itemPath, key], key, nested, depth + 1);
     }
   });
+
+  renderAddItem(list, ctx, path, value);
+}
+
+/** `+ Add item` for arrays of records / nested arrays. */
+function renderAddItem(
+  parent: HTMLElement,
+  ctx: SectionContext,
+  path: string[],
+  value: unknown[],
+): void {
+  const button = parent.createEl("button", {
+    cls: "np-add-button np-add-item",
+    attr: { type: "button" },
+  });
+  setIcon(button.createSpan({ cls: "np-icon" }), "plus");
+  button.createSpan({ text: t("addItem") });
+  button.addEventListener("click", () => {
+    const template = itemTemplate(value);
+    const itemPath = [...path, String(value.length)];
+    ctx.view.ui.expandedItems.add(`${ctx.file.path}::${itemPath.join(".")}`);
+    if (isPlainObject(template)) {
+      const first = Object.entries(template).find(
+        ([, entry]) => typeof entry === "string" || typeof entry === "number",
+      );
+      ctx.view.ui.pendingEditPath = first ? [...itemPath, first[0]] : null;
+    } else {
+      ctx.view.ui.pendingEditPath = null;
+    }
+    void applyPathEdit(ctx.app, ctx.file, path, {
+      op: "set",
+      value: [...value, template],
+    }).then(() => ctx.scheduleRender());
+  });
+}
+
+/** New records copy the shape of the previous one, with blank values. */
+function itemTemplate(items: unknown[]): unknown {
+  const model = [...items].reverse().find(isPlainObject);
+  if (!model) return "";
+  const template: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(model)) {
+    template[key] = placeholderFor(entry);
+  }
+  return template;
+}
+
+function placeholderFor(value: unknown): unknown {
+  switch (typeof value) {
+    case "number":
+      return 0;
+    case "boolean":
+      return false;
+    default:
+      break;
+  }
+  if (Array.isArray(value)) return [];
+  if (isPlainObject(value)) return {};
+  return "";
 }
 
 /** Human-readable one-line label for a record inside an array. */
@@ -424,7 +483,7 @@ async function copyValue(value: unknown): Promise<void> {
 function revealSource(ctx: SectionContext, path: string[]): void {
   const line = findFrontmatterLine(ctx.lines, ctx.cache, path);
   if (line === null) return;
-  ctx.navigate(line, 0);
+  ctx.navigate({ line, ch: 0 });
 }
 
 function isPrimitive(value: unknown): boolean {

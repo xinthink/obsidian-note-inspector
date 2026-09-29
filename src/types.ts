@@ -47,6 +47,14 @@ export function cloneDefaultSettings(): NotePanelSettings {
   return { ...DEFAULT_SETTINGS, collapsed: { ...DEFAULT_SETTINGS.collapsed } };
 }
 
+/** A location in a note: a caret when `endLine` is absent, else a selection. */
+export interface LineRange {
+  line: number;
+  ch?: number;
+  endLine?: number;
+  endCh?: number;
+}
+
 /** Everything a section renderer needs; built once per render pass. */
 export interface SectionContext {
   app: App;
@@ -58,8 +66,10 @@ export interface SectionContext {
   /** `content` split by newline, kept around for line-addressable lookup. */
   lines: string[];
   cache: CachedMetadata | null;
-  /** Scroll the note to a line, opening it in a workspace leaf if needed. */
-  navigate(line: number, ch?: number): void;
+  /** Reveal a line — or select a range — in the note's editor. */
+  navigate(target: LineRange): void;
+  /** Replace an inclusive line range (editor buffer first, so undo works). */
+  editLines(start: number, end: number, text: string): void;
   /** Ask the view for another render pass (after a mutation). */
   scheduleRender(): void;
 }

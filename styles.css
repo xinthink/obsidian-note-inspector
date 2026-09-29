@@ -466,12 +466,47 @@
   padding: 1px 2px;
 }
 
+.np-add-item {
+  margin-top: 2px;
+}
+
 .np-edit-input {
   width: 100%;
   height: auto;
   min-height: 22px;
   padding: 1px 4px;
   font-size: var(--font-ui-small);
+}
+
+.np-edit-textarea {
+  width: 100%;
+  min-height: 46px;
+  max-height: 260px;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: var(--font-ui-small);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.np-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.np-edit-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+}
+
+.np-edit-buttons {
+  display: flex;
+  gap: 2px;
+  flex: 0 0 auto;
 }
 
 /* --------------------------------------------------------------- outline */
@@ -569,9 +604,20 @@
 }
 
 .np-fn-head {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.np-fn:hover .np-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The edit button lands exactly where the reference count sits. */
+.np-fn:hover .np-fn-meta {
+  visibility: hidden;
 }
 
 .np-fn-index {

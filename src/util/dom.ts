@@ -93,6 +93,81 @@ export function startInlineEdit(
   return input;
 }
 
+export interface TextareaEditOptions {
+  value: string;
+  placeholder?: string;
+  /** Short line under the editor explaining how to commit. */
+  hint?: string;
+  saveLabel: string;
+  cancelLabel: string;
+  onCommit(value: string): void;
+  onCancel?(): void;
+}
+
+/**
+ * Multi-line variant of {@link startInlineEdit}: Cmd/Ctrl+Enter or the save
+ * button commits, Escape or the cancel button reverts, blur commits.
+ */
+export function startTextareaEdit(host: HTMLElement, options: TextareaEditOptions): void {
+  const previous = Array.from(host.childNodes);
+  host.empty();
+  host.addClass("is-editing");
+
+  const textarea = host.createEl("textarea", { cls: "np-edit-textarea" });
+  textarea.value = options.value;
+  textarea.rows = Math.min(10, Math.max(2, options.value.split("\n").length + 1));
+  if (options.placeholder) textarea.placeholder = options.placeholder;
+
+  const bar = host.createDiv({ cls: "np-edit-bar" });
+  if (options.hint) bar.createSpan({ cls: "np-edit-hint", text: options.hint });
+  const buttons = bar.createDiv({ cls: "np-edit-buttons" });
+  iconButton(buttons, {
+    icon: "x",
+    label: options.cancelLabel,
+    onClick: () => finish(false),
+  });
+  iconButton(buttons, {
+    icon: "check",
+    label: options.saveLabel,
+    onClick: () => finish(true),
+  });
+
+  let settled = false;
+  const finish = (commit: boolean) => {
+    if (settled) return;
+    settled = true;
+    const value = textarea.value;
+    textarea.remove();
+    bar.remove();
+    host.removeClass("is-editing");
+    host.append(...previous);
+    if (commit) options.onCommit(value);
+    else options.onCancel?.();
+  };
+
+  // Keep the textarea focused when a button is pressed, so blur does not fire
+  // before the button's own click handler.
+  for (const button of Array.from(buttons.querySelectorAll("button"))) {
+    button.addEventListener("mousedown", (event) => event.preventDefault());
+  }
+
+  textarea.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      finish(false);
+    } else if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      finish(true);
+    }
+  });
+  textarea.addEventListener("blur", () => finish(true));
+
+  window.setTimeout(() => {
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  }, 0);
+}
+
 /** A hover-revealed action bar attached to a row. */
 export function actionBar(parent: HTMLElement): HTMLElement {
   return parent.createDiv({ cls: "np-actions" });
