@@ -139,7 +139,7 @@
 
 /* ------------------------------------------------------------- icon button */
 
-.np-icon-button {
+button.np-icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -156,7 +156,7 @@
   flex: 0 0 auto;
 }
 
-.np-icon-button:hover {
+button.np-icon-button:hover {
   background-color: var(--background-modifier-hover);
   color: var(--text-normal);
 }
@@ -370,7 +370,7 @@
   background-color: var(--background-modifier-hover);
 }
 
-.np-item-toggle {
+button.np-item-toggle {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -387,7 +387,7 @@
   cursor: var(--cursor);
 }
 
-.np-item-toggle:hover {
+button.np-item-toggle:hover {
   background-color: transparent;
 }
 
@@ -429,7 +429,7 @@
   padding: 4px 2px 0;
 }
 
-.np-add-button {
+button.np-add-button {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -446,7 +446,7 @@
   cursor: var(--cursor);
 }
 
-.np-add-button:hover {
+button.np-add-button:hover {
   color: var(--text-normal);
   background-color: var(--background-modifier-hover);
   border-color: var(--interactive-accent);
@@ -475,7 +475,7 @@
   gap: 4px;
 }
 
-.np-type-chip {
+button.np-type-chip {
   flex: 0 0 auto;
   height: auto;
   padding: 1px 7px;
@@ -489,12 +489,12 @@
   cursor: var(--cursor);
 }
 
-.np-type-chip:hover {
+button.np-type-chip:hover {
   color: var(--text-normal);
   background-color: var(--background-modifier-hover);
 }
 
-.np-type-chip.is-active {
+button.np-type-chip.is-active {
   color: var(--text-on-accent);
   background-color: var(--interactive-accent);
   border-color: var(--interactive-accent);
@@ -505,7 +505,7 @@
   padding: 1px 0 0;
 }
 
-.np-add-key > .np-add-button-inline {
+.np-add-key > button.np-add-button-inline {
   display: inline-flex;
   width: auto;
   padding: 1px 6px;
@@ -514,7 +514,7 @@
   border: none;
 }
 
-.np-add-key > .np-add-button-inline:hover {
+.np-add-key > button.np-add-button-inline:hover {
   color: var(--text-accent);
   background-color: var(--background-modifier-hover);
   border: none;
@@ -779,7 +779,7 @@
   white-space: nowrap;
 }
 
-.np-more {
+button.np-more {
   display: flex;
   align-items: center;
   gap: 3px;
@@ -795,7 +795,7 @@
   cursor: var(--cursor);
 }
 
-.np-more:hover {
+button.np-more:hover {
   color: var(--text-accent);
   background-color: transparent;
 }
