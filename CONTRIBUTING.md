@@ -1,14 +1,13 @@
 # Contributing
 
-Thanks for taking a look. This is a small plugin, so the process is light: one
-focused change per pull request, verified by hand against a real vault.
+Thanks for taking a look. One focused change per pull request, verified by hand
+against a real vault.
 
 ## Requirements
 
 - Node.js 18 or newer
-- Obsidian (desktop) with a vault you can break — the panel reads and writes
-  frontmatter and footnote lines, so do not point it at notes you cannot restore
-  from a backup or from git.
+- Obsidian (desktop) with a vault you can break — the panel writes frontmatter and
+  footnote lines, so point it at notes you can restore from a backup or from git.
 
 ## Setup
 
@@ -21,7 +20,7 @@ npm install
 | Command | What it does |
 |---|---|
 | `npm run dev` | esbuild in watch mode, writes `main.js` with an inline source map |
-| `npm run build` | type check + production build (minified, no source map) |
+| `npm run build` | type check + production build (minified) |
 | `npm run typecheck` | `tsc --noEmit` only |
 | `npm run check` | validates `manifest.json` / `versions.json` / `package.json` consistency |
 | `npm run deploy` | copies `main.js`, `manifest.json`, `styles.css` into a vault |
@@ -48,34 +47,11 @@ obsidian dev:errors
 
 Without it, toggle the plugin off and on in **Settings → Community plugins**.
 
-## Project layout
+## Where things live
 
-```
-src/
-├── main.ts                 plugin entry: view, command, ribbon, settings tab
-├── view.ts                 the panel: follows the active note, section shell,
-│                           range navigation, line edits, render bookkeeping
-├── settings.ts             settings tab
-├── i18n.ts                 English / Chinese strings (follows the app language)
-├── types.ts                settings shape and the section render context
-├── components/collapsible.ts
-├── sections/               properties.ts, outline.ts, footnotes.ts
-└── util/                   frontmatter.ts, dom.ts, links.ts, rich-text.ts
-styles.css                  panel styles, `ni-` namespace, Obsidian variables only
-scripts/                    deploy + release checks
-```
-
-Three things are worth knowing before you change `view.ts`:
-
-- The panel is driven by Obsidian's **metadata cache**, like the core Outline
-  and Footnotes views, so it refreshes when the cache does. Footnote definition
-  text and definition spans are read from the editor buffer, which is fresher.
-- Renders are **skipped** when the note, its text and the cache are unchanged.
-  Panel-local state (folded reference lists, expanded records, clamped
-  definitions) goes through `ctx.refresh()`, which always rebuilds; event-driven
-  refreshes stay skippable so an inline editor is never destroyed while typing.
-- Fold state (sections and footnote reference lists) is persisted through the
-  plugin settings; other expansion state is per-session on purpose.
+The source layout and the design decisions behind the panel are documented in
+[AGENTS.md](AGENTS.md). Read it before touching `view.ts` — the render bookkeeping
+and the split between persisted settings and session state are easy to break.
 
 ## Conventions
 
@@ -84,10 +60,8 @@ Follow the [Obsidian plugin guidelines](https://docs.obsidian.md/Plugins/Releasi
 - Build DOM with `createEl` / `createDiv` / `createSpan`, never `innerHTML`.
 - No `console.*` output; surface problems with `Notice` or by doing nothing.
 - Style with classes and Obsidian CSS variables only — no inline colors.
-- Register events with `this.registerEvent(...)` and commands with
-  `this.addCommand(...)` so Obsidian cleans them up.
-- Use the plugin's `this.app`, not the global `app`.
-- Prefer `async`/`await`, `const`, and small focused functions.
+- Register events with `this.registerEvent(...)` and commands with `this.addCommand(...)`.
+- Use the plugin's `this.app`, not the global `app`; prefer `async`/`await`.
 
 ## Verifying a change
 
@@ -101,8 +75,8 @@ version you used:
    records), several heading levels, a footnote with more than one reference, a
    dangling `[^x]`, and an unused definition. All three sections render it.
 4. Edit a nested value, add a field, add an array item, add a property.
-5. Follow / edit a footnote, fold its reference rows, reload the plugin and check
-   that the fold state came back.
+5. Follow / edit a footnote, show and hide its reference lines, reload the plugin
+   and check the configured default came back.
 6. Switch notes, click inside the panel, and confirm the panel keeps showing the
    last focused note.
 
@@ -115,8 +89,9 @@ obsidian dev:screenshot path=/tmp/panel.png
 
 ## Releasing
 
-1. Bump the version in `manifest.json`, `package.json` and `versions.json`
-   (add `"<version>": "<minAppVersion>"`), and add a `CHANGELOG.md` entry.
+1. Bump the version in `manifest.json`, `package.json` (and the lockfile root),
+   and `versions.json` (add `"<version>": "<minAppVersion>"`); add a `CHANGELOG.md`
+   entry.
 2. `npm run build && npm run check 1.2.3 --assets`
 3. Commit, then tag the bare version and push it:
 

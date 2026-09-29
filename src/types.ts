@@ -18,14 +18,10 @@ export interface NoteInspectorSettings {
   showHeadingLevels: boolean;
   /** Highlight the heading of the section the cursor currently sits in. */
   highlightCurrentHeading: boolean;
-  /** Show the source line a footnote is referenced from. */
-  showFootnoteContext: boolean;
   /** How many references to list inline before offering "show more". */
   footnoteRefLimit: number;
-  /** Whether a footnote's reference rows are open without being asked for. */
-  footnoteRefsExpanded: boolean;
-  /** Footnote ids whose fold state differs from that default (remembered). */
-  footnoteRefsToggled: string[];
+  /** Whether a footnote lists the line each reference sits on. */
+  showFootnoteContext: boolean;
 }
 
 export const DEFAULT_SETTINGS: NoteInspectorSettings = {
@@ -36,12 +32,10 @@ export const DEFAULT_SETTINGS: NoteInspectorSettings = {
   },
   showCounts: true,
   outlineMaxLevel: 6,
-  showHeadingLevels: false,
+  showHeadingLevels: true,
   highlightCurrentHeading: true,
-  showFootnoteContext: true,
-  footnoteRefLimit: 8,
-  footnoteRefsExpanded: false,
-  footnoteRefsToggled: [],
+  footnoteRefLimit: 3,
+  showFootnoteContext: false,
 };
 
 /** Fresh copy of the defaults, safe to mutate. */
@@ -49,7 +43,6 @@ export function cloneDefaultSettings(): NoteInspectorSettings {
   return {
     ...DEFAULT_SETTINGS,
     collapsed: { ...DEFAULT_SETTINGS.collapsed },
-    footnoteRefsToggled: [...DEFAULT_SETTINGS.footnoteRefsToggled],
   };
 }
 
@@ -94,4 +87,6 @@ export interface PanelUiState {
   pendingEditPath: string[] | null;
   /** Array items (keyed by `file path::property path`) expanded to full detail. */
   expandedItems: Set<string>;
+  /** Footnote ids whose reference lines are shown, for this session only. */
+  footnoteContextToggled: Set<string>;
 }

@@ -19,7 +19,7 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
   const withRefs = groups.filter((group) => group.references.length > 0);
   const allExpanded =
     withRefs.length > 0 &&
-    withRefs.every((group) => ctx.plugin.isFootnoteRefsExpanded(group.id));
+    withRefs.every((group) => ctx.view.isFootnoteContextShown(group.id));
 
   createCollapsibleSection(parent, {
     id: "footnotes",
@@ -36,7 +36,7 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
         icon: allExpanded ? "chevrons-down-up" : "chevrons-up-down",
         label: allExpanded ? t("collapseAllReferences") : t("expandAllReferences"),
         onClick: () => {
-          ctx.plugin.setAllFootnoteRefsExpanded(
+          ctx.view.setAllFootnoteContext(
             withRefs.map((group) => group.id),
             !allExpanded,
           );
@@ -162,7 +162,6 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
   index.addEventListener("click", selectInNote);
   idEl.addEventListener("click", selectInNote);
 
-  const expanded = ctx.plugin.isFootnoteRefsExpanded(group.id);
   if (group.references.length === 0) {
     const meta = head.createSpan({ cls: "ni-fn-meta" });
     meta.setText(group.definition ? t("footnoteUnused") : t("footnoteMissing"));
@@ -170,6 +169,7 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
     return;
   }
 
+  const expanded = ctx.view.isFootnoteContextShown(group.id);
   const toggle = head.createEl("button", {
     cls: "ni-fn-meta ni-fn-refs-toggle",
     attr: {
@@ -178,23 +178,23 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
       title: expanded ? t("collapseReferences") : t("expandReferences"),
     },
   });
-  toggle.createSpan({
-    text:
-      group.references.length === 1
-        ? t("footnoteReferenceOne")
-        : t("footnoteReferenceMany", { n: group.references.length }),
-  });
+  toggle.createSpan({ text: referenceCount(group.references.length) });
   const chevron = toggle.createSpan({ cls: "ni-fn-toggle-chevron" });
   setIcon(chevron, expanded ? "chevron-down" : "chevron-right");
   toggle.addEventListener("click", () => {
-    ctx.plugin.toggleFootnoteRefs(group.id);
+    ctx.view.toggleFootnoteContext(group.id);
     ctx.refresh();
   });
 
   renderDefinition(card, head, ctx, group);
-  if (expanded && ctx.plugin.settings.showFootnoteContext) {
-    renderReferences(card, ctx, group);
-  }
+  if (expanded) renderReferences(card, ctx, group);
+}
+
+/** "1 reference" / "N references". */
+function referenceCount(count: number): string {
+  return count === 1
+    ? t("footnoteReferenceOne")
+    : t("footnoteReferenceMany", { n: count });
 }
 
 function renderDefinition(

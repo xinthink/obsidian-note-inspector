@@ -38,7 +38,9 @@ export default class NoteInspectorPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const stored = (await this.loadData()) as Partial<NoteInspectorSettings> | null;
+    const stored = (await this.loadData()) as
+      | (Partial<NoteInspectorSettings> & { footnoteRefsExpanded?: boolean })
+      | null;
     const defaults = cloneDefaultSettings();
     // Read field by field so settings from older versions (for example the
     // removed `language` option) are dropped instead of written back.
@@ -48,10 +50,12 @@ export default class NoteInspectorPlugin extends Plugin {
       outlineMaxLevel: stored?.outlineMaxLevel ?? defaults.outlineMaxLevel,
       showHeadingLevels: stored?.showHeadingLevels ?? defaults.showHeadingLevels,
       highlightCurrentHeading: stored?.highlightCurrentHeading ?? defaults.highlightCurrentHeading,
-      showFootnoteContext: stored?.showFootnoteContext ?? defaults.showFootnoteContext,
       footnoteRefLimit: stored?.footnoteRefLimit ?? defaults.footnoteRefLimit,
-      footnoteRefsExpanded: stored?.footnoteRefsExpanded ?? defaults.footnoteRefsExpanded,
-      footnoteRefsToggled: [...(stored?.footnoteRefsToggled ?? defaults.footnoteRefsToggled)],
+      // `footnoteRefsExpanded` was 1.0.1's name for the same switch.
+      showFootnoteContext:
+        stored?.showFootnoteContext ??
+        stored?.footnoteRefsExpanded ??
+        defaults.showFootnoteContext,
     };
   }
 
@@ -66,31 +70,6 @@ export default class NoteInspectorPlugin extends Plugin {
     void this.saveSettings();
   }
 
-  /**
-   * Whether a footnote shows its reference rows. Entries the user toggled by
-   * hand keep their own state; everything else follows the default.
-   */
-  isFootnoteRefsExpanded(id: string): boolean {
-    const flipped = this.settings.footnoteRefsToggled.includes(id);
-    return flipped ? !this.settings.footnoteRefsExpanded : this.settings.footnoteRefsExpanded;
-  }
-
-  /** Flip one footnote away from the default and remember it. */
-  toggleFootnoteRefs(id: string): void {
-    const toggled = this.settings.footnoteRefsToggled;
-    this.settings.footnoteRefsToggled = toggled.includes(id)
-      ? toggled.filter((entry) => entry !== id)
-      : [...toggled, id];
-    void this.saveSettings();
-  }
-
-  /** Set every given footnote to `expanded`, dropping redundant overrides. */
-  setAllFootnoteRefsExpanded(ids: string[], expanded: boolean): void {
-    const others = this.settings.footnoteRefsToggled.filter((id) => !ids.includes(id));
-    this.settings.footnoteRefsToggled =
-      expanded === this.settings.footnoteRefsExpanded ? others : [...others, ...ids];
-    void this.saveSettings();
-  }
 
   /** Re-render every open panel (used after settings or language changes). */
   refreshViews(): void {

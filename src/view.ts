@@ -30,6 +30,7 @@ export class NoteInspectorView extends ItemView {
     expandedFootnoteDefs: new Set<string>(),
     pendingEditPath: null,
     expandedItems: new Set<string>(),
+    footnoteContextToggled: new Set<string>(),
   };
 
   private headerEl!: HTMLElement;
@@ -49,6 +50,30 @@ export class NoteInspectorView extends ItemView {
     this.plugin = plugin;
     this.navigation = false;
     this.scheduleRender = debounce(() => void this.render(), 120, true);
+  }
+
+  /**
+   * Whether a footnote lists the line each reference sits on: the configured
+   * default, or this session's flip of it. Showing the lines is a peek, so the
+   * per-footnote part deliberately never reaches `data.json`.
+   */
+  isFootnoteContextShown(id: string): boolean {
+    const flipped = this.ui.footnoteContextToggled.has(id);
+    const fallback = this.plugin.settings.showFootnoteContext;
+    return flipped ? !fallback : fallback;
+  }
+
+  /** Flip one footnote's reference lines for this session only. */
+  toggleFootnoteContext(id: string): void {
+    if (this.ui.footnoteContextToggled.has(id)) this.ui.footnoteContextToggled.delete(id);
+    else this.ui.footnoteContextToggled.add(id);
+  }
+
+  /** Show or hide the reference lines of `ids` for this session only. */
+  setAllFootnoteContext(ids: string[], shown: boolean): void {
+    for (const id of ids) {
+      if (this.isFootnoteContextShown(id) !== shown) this.toggleFootnoteContext(id);
+    }
   }
 
   /**

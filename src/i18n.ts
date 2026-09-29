@@ -67,10 +67,8 @@ const en = {
     highlightCurrentHeadingDesc:
       "Highlight the heading of the section the cursor is in (source mode).",
     showFootnoteContext: "Show footnote context",
-    showFootnoteContextDesc: "Preview the line each footnote reference sits on.",
-    expandFootnoteRefs: "Expand reference lists",
-    expandFootnoteRefsDesc:
-      "Open the reference lines of every footnote straight away. When off, they stay folded until you click them.",
+    showFootnoteContextDesc:
+      "List the line each footnote is referenced from. When off, click a footnote's reference count to reveal them.",
     footnoteRefLimit: "References shown per footnote",
     footnoteRefLimitDesc: "Longer reference lists collapse behind a “Show more” button.",
     reset: "Reset panel state",
@@ -144,9 +142,7 @@ const zh: Dict = {
     highlightCurrentHeading: "高亮当前标题",
     highlightCurrentHeadingDesc: "高亮光标所在章节对应的标题（源码模式）。",
     showFootnoteContext: "显示脚注上下文",
-    showFootnoteContextDesc: "预览每条脚注引用所在行的文字。",
-    expandFootnoteRefs: "默认展开引用行",
-    expandFootnoteRefsDesc: "开启后每条脚注直接列出引用行；关闭时默认收起，点「N references」或标题栏按钮展开。",
+    showFootnoteContextDesc: "列出每条脚注被引用的那一行。关闭时点某条的「N references」临时查看，重启后恢复收起。",
     footnoteRefLimit: "每条脚注显示的引用数",
     footnoteRefLimitDesc: "超过该数量的引用会折叠到「展开」按钮后面。",
     reset: "重置面板状态",
@@ -165,11 +161,14 @@ export function setLocale(): void {
   activeLocale = detectAppLocale().startsWith("zh") ? "zh" : "en";
 }
 
+/**
+ * The interface language as Obsidian itself reports it: the `moment` exported
+ * by Obsidian is configured with the app locale, so there is no reason to read
+ * (let alone write) Obsidian's own storage keys.
+ */
 function detectAppLocale(): string {
   try {
-    const stored = window.localStorage?.getItem("language");
-    if (stored) return stored;
-    return moment.locale();
+    return moment.locale() ?? "en";
   } catch {
     return "en";
   }

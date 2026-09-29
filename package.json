@@ -1,6 +1,6 @@
 {
   "name": "obsidian-note-inspector",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Obsidian plugin: an inspector panel for the active note \u2014 properties, outline and footnotes in one collapsible view.",
   "private": true,
   "type": "module",

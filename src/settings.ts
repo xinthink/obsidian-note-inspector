@@ -80,21 +80,6 @@ export class NoteInspectorSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName(t("settings.expandFootnoteRefs"))
-      .setDesc(t("settings.expandFootnoteRefsDesc"))
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.footnoteRefsExpanded)
-          .onChange(async (value) => {
-            this.plugin.settings.footnoteRefsExpanded = value;
-            // A new default is a clean slate for the per-footnote tweaks.
-            this.plugin.settings.footnoteRefsToggled = [];
-            await this.plugin.saveSettings();
-            this.plugin.refreshViews();
-          }),
-      );
-
-    new Setting(containerEl)
       .setName(t("settings.footnoteRefLimit"))
       .setDesc(t("settings.footnoteRefLimitDesc"))
       .addSlider((slider) =>
