@@ -22,6 +22,8 @@ export interface NoteInspectorSettings {
   showFootnoteContext: boolean;
   /** How many references to list inline before offering "show more". */
   footnoteRefLimit: number;
+  /** Footnote ids whose reference rows were folded away (remembered). */
+  foldedFootnoteRefs: string[];
   language: PanelLanguage;
 }
 
@@ -39,12 +41,17 @@ export const DEFAULT_SETTINGS: NoteInspectorSettings = {
   highlightCurrentHeading: true,
   showFootnoteContext: true,
   footnoteRefLimit: 8,
+  foldedFootnoteRefs: [],
   language: "auto",
 };
 
 /** Fresh copy of the defaults, safe to mutate. */
 export function cloneDefaultSettings(): NoteInspectorSettings {
-  return { ...DEFAULT_SETTINGS, collapsed: { ...DEFAULT_SETTINGS.collapsed } };
+  return {
+    ...DEFAULT_SETTINGS,
+    collapsed: { ...DEFAULT_SETTINGS.collapsed },
+    foldedFootnoteRefs: [...DEFAULT_SETTINGS.foldedFootnoteRefs],
+  };
 }
 
 /** A location in a note: a caret when `endLine` is absent, else a selection. */

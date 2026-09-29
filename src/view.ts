@@ -52,6 +52,11 @@ export class NoteInspectorView extends ItemView {
     this.scheduleRender = debounce(() => void this.render(), 120, true);
   }
 
+  /** Re-seed the session fold state from the saved settings. */
+  syncFoldedFootnoteRefs(): void {
+    this.ui.collapsedFootnoteRefs = new Set(this.plugin.settings.foldedFootnoteRefs);
+  }
+
   getViewType(): string {
     return VIEW_TYPE_NOTE_INSPECTOR;
   }
@@ -65,6 +70,7 @@ export class NoteInspectorView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
+    this.syncFoldedFootnoteRefs();
     this.contentEl.addClass("note-inspector-view");
     const root = this.contentEl.createDiv({ cls: "ni-root" });
     this.headerEl = root.createDiv({ cls: "ni-header" });

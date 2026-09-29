@@ -61,6 +61,12 @@ export default class NoteInspectorPlugin extends Plugin {
     void this.saveSettings();
   }
 
+  /** Remember which footnotes have their reference rows folded. */
+  setFoldedFootnoteRefs(ids: Iterable<string>): void {
+    this.settings.foldedFootnoteRefs = [...ids];
+    void this.saveSettings();
+  }
+
   applyLanguage(): void {
     setLocale(this.settings.language);
   }
@@ -69,7 +75,10 @@ export default class NoteInspectorPlugin extends Plugin {
   refreshViews(): void {
     for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_NOTE_INSPECTOR)) {
       const view = leaf.view;
-      if (view instanceof NoteInspectorView) void view.render(true);
+      if (view instanceof NoteInspectorView) {
+        view.syncFoldedFootnoteRefs();
+        void view.render(true);
+      }
     }
   }
 }

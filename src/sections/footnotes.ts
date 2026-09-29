@@ -40,6 +40,7 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
             if (allFolded) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
             else ctx.view.ui.collapsedFootnoteRefs.add(group.id);
           }
+          ctx.plugin.setFoldedFootnoteRefs(ctx.view.ui.collapsedFootnoteRefs);
           ctx.refresh();
         },
       });
@@ -189,6 +190,7 @@ function renderFootnote(parent: HTMLElement, ctx: SectionContext, group: Footnot
   toggle.addEventListener("click", () => {
     if (collapsed) ctx.view.ui.collapsedFootnoteRefs.delete(group.id);
     else ctx.view.ui.collapsedFootnoteRefs.add(group.id);
+    ctx.plugin.setFoldedFootnoteRefs(ctx.view.ui.collapsedFootnoteRefs);
     ctx.refresh();
   });
 
