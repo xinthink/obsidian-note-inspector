@@ -16,7 +16,8 @@ const read = (name) => JSON.parse(readFileSync(path.join(root, name), "utf8"));
 const manifest = read("manifest.json");
 const pkg = read("package.json");
 const versions = read("versions.json");
-const tag = process.argv[2];
+const args = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
+const tag = args[0];
 
 const problems = [];
 const check = (condition, message) => {
