@@ -133,6 +133,11 @@
   opacity: 1;
 }
 
+/* Actions that stay visible (dimmed) so they can be discovered without hover. */
+.np-section-actions.is-persistent {
+  opacity: 0.55;
+}
+
 .np-section-body {
   padding: 2px 0;
 }

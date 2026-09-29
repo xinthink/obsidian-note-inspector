@@ -30,6 +30,8 @@ export function renderFootnotesSection(parent: HTMLElement, ctx: SectionContext)
     onToggle: (collapsed) => ctx.plugin.setSectionCollapsed("footnotes", collapsed),
     buildActions: (bar) => {
       if (withRefs.length === 0) return;
+      // Keep this one visible: it is the only way to fold every list at once.
+      bar.addClass("is-persistent");
       iconButton(bar, {
         icon: allFolded ? "chevrons-up-down" : "chevrons-down-up",
         label: allFolded ? t("expandAllReferences") : t("collapseAllReferences"),
