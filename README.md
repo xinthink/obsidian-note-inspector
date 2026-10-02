@@ -2,12 +2,20 @@
 
 [**English**](README.md) | [简体中文](README.zh.md)
 
-Obsidian's **File properties**, **Outline** and **Footnotes** views stacked in a
-single side panel for the note in focus, so you stop switching between three
-panes. Every section folds on its own, and the panel remembers which ones you
-folded.
-
 ![The Note Inspector panel showing properties, outline and footnotes](docs/images/panel.png)
+
+Obsidian's **File properties**, **Outline** and **Footnotes** views stacked in a
+single side panel for the note in focus. Every section folds on its own, and the
+panel remembers what you folded.
+
+## Why
+
+Note Inspector grew out of a personal LLM wiki, whose notes are built to the
+**Open Knowledge Format (OKF)**. That is why their frontmatter is structured
+rather than free-form: OKF has a note record its own provenance, so
+`generated` says which actor produced the content and when. Add long outlines
+and plenty of footnotes, and checking one note meant hopping between three
+views — so all three now live in one panel.
 
 ## Install
 
@@ -15,21 +23,23 @@ Requires Obsidian **1.13.0** or newer.
 
 ### From the community directory
 
-Search for **Note Inspector** in **Settings → Community plugins → Browse** once the
-plugin is listed there.
+Search for **Note Inspector** in **Settings → Community plugins → Browse** once
+the plugin is listed there.
 
 ### Manually
 
 Download `main.js`, `manifest.json` and `styles.css` from the
 [latest release](https://github.com/xinthink/obsidian-note-inspector/releases), put
 them in `<vault>/.obsidian/plugins/note-inspector/`, and enable the plugin in
-**Settings → Community plugins**. Reload Obsidian if it does not show up.
+**Settings → Community plugins** (with restricted mode off). Reload Obsidian if
+it does not show up.
 
 ## Using the panel
 
 The panel lives in the right sidebar (or run **Open note inspector** from the
-command palette) and follows the note you are working on. The header shows the
-current note and two buttons: **collapse/expand all sections** and **refresh**.
+command palette) and follows the note you are working on — clicking the panel
+itself never hides its content. The header shows the current note and two
+buttons: **collapse/expand all sections** and **refresh**.
 
 ### Properties
 
@@ -73,7 +83,8 @@ highlight of the heading the cursor is currently in.
   click a **reference line** to select that exact `[^id]`.
 - References without a definition are marked *No matching definition* (`+` writes
   one at the end of the note); definitions nobody links to are marked *Defined but
-  never referenced*.
+  never referenced*. Long definitions are clamped to three lines until you press
+  **Show more**.
 
 ## Settings
 
@@ -87,14 +98,13 @@ highlight of the heading the cursor is currently in.
 | References shown per footnote | 3 | Longer lists collapse behind “Show more” |
 | Reset panel state | — | Restore default settings and fold state |
 
-The panel's labels follow the **Obsidian UI language** (Chinese for `zh*`, English
-otherwise) — there is no separate language setting. Section folds need no
-configuration: click a section and the panel remembers your choice.
+Labels follow the **Obsidian UI language** (Chinese for `zh*`, English
+otherwise); there is no separate language setting.
 
 ## Good to know
 
-- The panel refreshes like the built-in Outline view — about two seconds after you
-  stop typing.
+- Headings and footnotes come from Obsidian's metadata cache, so they refresh a
+  moment after you stop typing — the same behaviour as the built-in Outline view.
 - The plugin only reads and writes the note's frontmatter and footnote lines. No
   network access, no telemetry, no ads.
 
